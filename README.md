@@ -3,7 +3,7 @@
 **Transform static video loops into dynamic, lifelike avatars with intelligent Markov chain sequencing**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
+[![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![ComfyUI](https://img.shields.io/badge/ComfyUI-Compatible-green.svg)](https://github.com/comfyanonymous/ComfyUI)
 [![Status](https://img.shields.io/badge/Status-Production%20Ready-brightgreen.svg)]()
 
@@ -47,10 +47,12 @@ Our Markov chain engine analyzes your video collection and generates intelligent
 ### Prerequisites
 
 - **ComfyUI** installed and working
-- **Python 3.10+** 
+- **Python 3.11+** (recommended for best compatibility)
 - **FFmpeg** installed system-wide
 - **8GB+ RAM** recommended
 - **GPU** with 4GB+ VRAM (RTX 3060 or better recommended)
+
+> ⚠️ **Python Version Important**: Use Python 3.11.x for optimal compatibility. Python 3.13+ may have dependency issues.
 
 ### Installation
 
@@ -67,6 +69,17 @@ Our Markov chain engine analyzes your video collection and generates intelligent
 
 3. **Install Python dependencies:**
    ```bash
+   # Ensure you have Python 3.11.x active
+   python --version  # Should show Python 3.11.x
+   
+   # Install dependencies
+   pip install -r requirements.txt
+   ```
+   
+   **If you encounter installation errors:**
+   ```bash
+   # Try installing build tools first
+   pip install setuptools wheel
    pip install -r requirements.txt
    ```
 

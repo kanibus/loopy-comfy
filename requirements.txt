@@ -1,16 +1,23 @@
-# Core Processing
-numpy==1.24.3
-opencv-python==4.8.1.78
+# Python 3.11+ Required for optimal compatibility
+
+# Core Processing  
+numpy>=1.24.3,<2.0.0
+opencv-python>=4.8.1.78
+Pillow>=10.0.0
 
 # Video Encoding
-ffmpeg-python==0.2.0
-imageio==2.31.5
-imageio-ffmpeg==0.4.9
+ffmpeg-python>=0.2.0
+imageio>=2.31.5
+imageio-ffmpeg>=0.4.9
 
 # Scientific Computing
-scipy==1.11.4
-scikit-learn==1.3.2
+scipy>=1.11.0
+scikit-learn>=1.3.0
+
+# Build Dependencies (for compatibility)
+setuptools>=65.0.0
+wheel>=0.40.0
 
 # Development Tools (for testing)
-pytest==7.4.3
-pytest-cov==4.1.0
+pytest>=7.4.0
+pytest-cov>=4.1.0
