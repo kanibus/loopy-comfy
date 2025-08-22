@@ -64,13 +64,16 @@ NODE_CLASS_MAPPINGS = {
     "LoopyComfy_VideoSaver": LoopyComfy_VideoSaver,
 }
 
-# Display names for ComfyUI menu
+# Display names for ComfyUI menu (removed emojis for compatibility)
 NODE_DISPLAY_NAME_MAPPINGS = {
-    "LoopyComfy_VideoAssetLoader": "🎬 Video Asset Loader",
-    "LoopyComfy_MarkovVideoSequencer": "🎲 Markov Video Sequencer", 
-    "LoopyComfy_VideoSequenceComposer": "🎞️ Video Sequence Composer",
-    "LoopyComfy_VideoSaver": "💾 Video Saver",
+    "LoopyComfy_VideoAssetLoader": "Video Asset Loader",
+    "LoopyComfy_MarkovVideoSequencer": "Markov Video Sequencer", 
+    "LoopyComfy_VideoSequenceComposer": "Video Sequence Composer",
+    "LoopyComfy_VideoSaver": "Video Saver",
 }
+
+# Required for ComfyUI web interface
+WEB_DIRECTORY = "./web"
 
 # Custom type definitions for ComfyUI
 # These types allow proper data flow between nodes
