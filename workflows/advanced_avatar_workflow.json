@@ -4,7 +4,7 @@
   "nodes": [
     {
       "id": 1,
-      "type": "VideoAssetLoader",
+      "type": "LoopyComfy_VideoAssetLoader",
       "pos": [100, 100],
       "size": {
         "0": 400,
@@ -22,7 +22,7 @@
         }
       ],
       "properties": {
-        "Node name for S&R": "VideoAssetLoader"
+        "Node name for S&R": "LoopyComfy_VideoAssetLoader"
       },
       "widgets_values": [
         "./assets/avatar_collection",
@@ -35,7 +35,7 @@
     },
     {
       "id": 2,
-      "type": "MarkovVideoSequencer", 
+      "type": "LoopyComfy_MarkovVideoSequencer", 
       "pos": [550, 100],
       "size": {
         "0": 400,
@@ -66,7 +66,7 @@
         }
       ],
       "properties": {
-        "Node name for S&R": "MarkovVideoSequencer"
+        "Node name for S&R": "LoopyComfy_MarkovVideoSequencer"
       },
       "widgets_values": [
         30.0,
@@ -78,7 +78,7 @@
     },
     {
       "id": 3,
-      "type": "VideoSequenceComposer",
+      "type": "LoopyComfy_VideoSequenceComposer",
       "pos": [1000, 100],
       "size": {
         "0": 400,
@@ -103,7 +103,7 @@
         }
       ],
       "properties": {
-        "Node name for S&R": "VideoSequenceComposer"
+        "Node name for S&R": "LoopyComfy_VideoSequenceComposer"
       },
       "widgets_values": [
         30,
@@ -115,7 +115,7 @@
     },
     {
       "id": 4,
-      "type": "VideoSaver",
+      "type": "LoopyComfy_VideoSaver",
       "pos": [1450, 100],
       "size": {
         "0": 400,
@@ -140,7 +140,7 @@
         }
       ],
       "properties": {
-        "Node name for S&R": "VideoSaver"
+        "Node name for S&R": "LoopyComfy_VideoSaver"
       },
       "widgets_values": [
         "advanced_avatar_30min_4K",
