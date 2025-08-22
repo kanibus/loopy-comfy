@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 VideoAssetLoader Node for Loopy Comfy
 
@@ -7,9 +8,16 @@ and preparing them for Markov chain sequencing.
 
 import os
 import glob
+import sys
 import cv2
 import numpy as np
 from typing import Dict, List, Tuple, Any, Optional
+
+# CRITICAL: Standardized import path setup for ComfyUI compatibility
+current_dir = os.path.dirname(os.path.abspath(__file__))
+project_root = os.path.dirname(current_dir)
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
 
 
 class LoopyComfy_VideoAssetLoader:

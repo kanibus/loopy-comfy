@@ -11,8 +11,11 @@ import sys
 import os
 from typing import Dict, List, Tuple, Any, Optional
 
-# Add the project root to Python path for imports  
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+# CRITICAL: Standardized import path setup for ComfyUI compatibility
+current_dir = os.path.dirname(os.path.abspath(__file__))
+project_root = os.path.dirname(current_dir)
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
 from utils.video_utils import extract_frames, resize_frames, concatenate_frames, load_video_safe
 
 

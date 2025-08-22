@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 VideoSaver Node for Loopy Comfy
 
@@ -6,11 +7,18 @@ with various codec and quality options.
 """
 
 import os
+import sys
 import cv2
 import numpy as np
 import ffmpeg
 from typing import Dict, List, Tuple, Any, Optional
 from pathlib import Path
+
+# CRITICAL: Standardized import path setup for ComfyUI compatibility
+current_dir = os.path.dirname(os.path.abspath(__file__))
+project_root = os.path.dirname(current_dir)
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
 
 
 class LoopyComfy_VideoSaver:
