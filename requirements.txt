@@ -1,0 +1,16 @@
+# Core Processing
+numpy==1.24.3
+opencv-python==4.8.1.78
+
+# Video Encoding
+ffmpeg-python==0.2.0
+imageio==2.31.5
+imageio-ffmpeg==0.4.9
+
+# Scientific Computing
+scipy==1.11.4
+scikit-learn==1.3.2
+
+# Development Tools (for testing)
+pytest==7.4.3
+pytest-cov==4.1.0
