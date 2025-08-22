@@ -3,7 +3,7 @@
 **Transform static video loops into dynamic, lifelike avatars with intelligent Markov chain sequencing**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
+[![Python 3.12+](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/downloads/)
 [![ComfyUI](https://img.shields.io/badge/ComfyUI-Compatible-green.svg)](https://github.com/comfyanonymous/ComfyUI)
 [![Status](https://img.shields.io/badge/Status-Production%20Ready-brightgreen.svg)]()
 
@@ -47,22 +47,25 @@ Our Markov chain engine analyzes your video collection and generates intelligent
 ### Prerequisites
 
 - **ComfyUI** installed and working
-- **Python 3.11.x** (STRONGLY RECOMMENDED - see compatibility matrix below)
+- **Python 3.12.x** (STRONGLY RECOMMENDED - see compatibility matrix below)
 - **FFmpeg** installed system-wide
 - **8GB+ RAM** recommended
 - **GPU** with 4GB+ VRAM (RTX 3060 or better recommended)
 
 #### **🐍 Python Version Compatibility Matrix**
 
-| Python Version | Status | Compatibility | Issues |
+| Python Version | Status | Compatibility | Notes |
 |---------------|--------|---------------|--------|
-| **3.11.x** | ✅ **RECOMMENDED** | Excellent | None - all packages have wheels |
+| **3.12.x** | ✅ **RECOMMENDED** | Excellent | Active development, best performance, binary installers |
+| 3.11.x | ✅ Supported | Good | Security-only mode (no binary installers since 3.11.9) |
 | 3.10.x | ✅ Supported | Good | Minor performance differences |
-| 3.12.x | ⚠️ Limited | Partial | Some packages may need compilation |
 | 3.13+ | ❌ **NOT SUPPORTED** | Poor | Missing wheel distributions |
 | 3.9 and below | ❌ **NOT SUPPORTED** | None | Missing required features |
 
-> 🚨 **CRITICAL**: If you're using Python 3.13+, you WILL encounter installation errors. Please switch to Python 3.11.x first.
+> 🚨 **CRITICAL**: Python 3.12.x is now RECOMMENDED over 3.11.x because:
+> - Python 3.11 is in security-only mode (no more binary installers)
+> - Python 3.12 has better performance and active development
+> - All scientific packages now support Python 3.12
 
 ### Installation
 
@@ -80,7 +83,7 @@ Our Markov chain engine analyzes your video collection and generates intelligent
 3. **Install Python dependencies:**
    ```bash
    # STEP 1: Verify Python version (CRITICAL)
-   python --version  # Must show Python 3.11.x
+   python --version  # Must show Python 3.12.x (or 3.11.x/3.10.x)
    
    # STEP 2: Install dependencies
    pip install -r requirements.txt
@@ -97,7 +100,7 @@ Our Markov chain engine analyzes your video collection and generates intelligent
    **Method B - Use Conda (MOST RELIABLE):**
    ```bash
    # Install Miniconda/Anaconda first, then:
-   conda create -n loopy-comfy python=3.11
+   conda create -n loopy-comfy python=3.12
    conda activate loopy-comfy
    conda install numpy opencv scipy scikit-learn pillow
    pip install ffmpeg-python imageio imageio-ffmpeg
@@ -303,15 +306,17 @@ pytest tests/ --cov=core --cov=nodes --cov=utils --cov-report=html
 #### **Problem: Python 3.13+ Installation Errors**
 **Error:** `BackendUnavailable: Cannot import 'setuptools.build_meta'`
 
-**Solution:** Switch to Python 3.11.x:
+**Solution:** Switch to Python 3.12.x (RECOMMENDED) or 3.11.x:
 ```bash
 # Check current version
 python --version
 
-# If not 3.11.x, install Python 3.11:
-# Windows: Download from python.org
-# macOS: brew install python@3.11
-# Linux: sudo apt install python3.11
+# If not 3.12.x, install Python 3.12 (RECOMMENDED):
+# Windows: Download from python.org  
+# macOS: brew install python@3.12
+# Linux: sudo apt install python3.12
+
+# Alternative: Python 3.11 still works but is security-only
 ```
 
 #### **Problem: "Some Nodes Are Missing" in ComfyUI**
@@ -333,7 +338,7 @@ python --version
 ### **🆘 Emergency Installation (When Nothing Works)**
 ```bash
 # Last resort - conda method
-conda create -n loopy-comfy python=3.11
+conda create -n loopy-comfy python=3.12
 conda activate loopy-comfy  
 conda install numpy opencv scipy scikit-learn pillow
 pip install ffmpeg-python imageio imageio-ffmpeg
@@ -366,7 +371,7 @@ conda activate loopy-comfy
 
 ### Compatibility
 - **ComfyUI**: All recent versions (tested with latest)
-- **Python**: 3.11.x (recommended), 3.10.x (supported), 3.12.x (limited)
+- **Python**: 3.12.x (recommended), 3.11.x (supported), 3.10.x (supported)
 - **Operating Systems**: Windows 10/11, Ubuntu 20.04+, macOS 12+
 - **GPUs**: Any CUDA-compatible (recommended: RTX 3060+)
 - **Dependencies**: See [requirements.txt](requirements.txt) for exact versions

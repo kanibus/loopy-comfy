@@ -15,21 +15,21 @@ BackendUnavailable: Cannot import 'setuptools.build_meta'
 
 **Solutions (in order of preference):**
 
-#### **Solution 1A: Use Python 3.11 (RECOMMENDED)**
+#### **Solution 1A: Use Python 3.12 (RECOMMENDED)**
 ```bash
 # Check your Python version
 python --version
 
-# If not 3.11.x, install Python 3.11
+# If not 3.12.x, install Python 3.12
 # Windows: Download from python.org
-# macOS: brew install python@3.11  
-# Ubuntu: sudo apt install python3.11 python3.11-dev python3.11-venv
+# macOS: brew install python@3.12  
+# Ubuntu: sudo apt install python3.12 python3.12-dev python3.12-venv
 ```
 
 #### **Solution 1B: Use Conda (BEST FOR COMPLEX SYSTEMS)**
 ```bash
 # Install Miniconda/Anaconda first, then:
-conda create -n loopy-comfy python=3.11
+conda create -n loopy-comfy python=3.12
 conda activate loopy-comfy
 conda install numpy opencv scipy scikit-learn pillow
 pip install ffmpeg-python imageio imageio-ffmpeg
@@ -38,9 +38,9 @@ pip install ffmpeg-python imageio imageio-ffmpeg
 #### **Solution 1C: Use pyenv (Linux/macOS)**
 ```bash
 # Install pyenv first, then:
-pyenv install 3.11.8
-pyenv local 3.11.8
-python --version  # Should show 3.11.8
+pyenv install 3.12.7
+pyenv local 3.12.7
+python --version  # Should show 3.12.7
 ```
 
 ---
@@ -235,10 +235,10 @@ Process killed
 
 ## 🔄 **Step-by-Step Installation Process**
 
-### **Method 1: Standard Installation (Python 3.11)**
+### **Method 1: Standard Installation (Python 3.12)**
 ```bash
 # 1. Verify Python version
-python --version  # Must be 3.11.x
+python --version  # Must be 3.12.x
 
 # 2. Navigate to ComfyUI custom nodes
 cd ComfyUI/custom_nodes/
@@ -262,7 +262,7 @@ python -c "import numpy, cv2, ffmpeg; print('All dependencies OK')"
 # 1. Install Miniconda/Anaconda if not already installed
 
 # 2. Create environment
-conda create -n loopy-comfy python=3.11
+conda create -n loopy-comfy python=3.12
 conda activate loopy-comfy
 
 # 3. Install scientific packages via conda
@@ -283,7 +283,7 @@ conda activate loopy-comfy
 ### **Method 3: Docker Installation (ADVANCED)**
 ```bash
 # Create Dockerfile in loopy-comfy directory:
-FROM python:3.11-slim
+FROM python:3.12-slim
 
 RUN apt-get update && apt-get install -y \
     ffmpeg \
@@ -309,7 +309,7 @@ docker run -v $(pwd):/app loopy-comfy
 
 ### **Test Python Environment:**
 ```bash
-python --version                          # Should be 3.11.x
+python --version                          # Should be 3.12.x
 python -c "import sys; print(sys.path)"  # Check Python path
 ```
 
@@ -372,7 +372,7 @@ python -c "import numpy, cv2; print('Core OK')"
 ## 📊 **Success Indicators**
 
 ✅ **Installation Successful When:**
-- `python --version` shows 3.11.x
+- `python --version` shows 3.12.x
 - `pip list` shows all required packages
 - `ffmpeg -version` works without error
 - ComfyUI starts without import errors

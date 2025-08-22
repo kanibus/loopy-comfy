@@ -2,12 +2,18 @@
 # LOOPY COMFY REQUIREMENTS
 # ============================================================================
 # 
-# PYTHON VERSION COMPATIBILITY:
-# ✅ Python 3.11.x (RECOMMENDED - Best compatibility)
+# PYTHON VERSION COMPATIBILITY (Updated 2024):
+# ✅ Python 3.12.x (RECOMMENDED - Active development, best performance)
+# ✅ Python 3.11.x (Supported - Security fixes only until 2027)
 # ✅ Python 3.10.x (Supported - Good compatibility) 
-# ⚠️  Python 3.12.x (Limited - May have issues with some packages)
 # ❌ Python 3.13+ (NOT SUPPORTED - Missing wheel distributions)
 # ❌ Python 3.9 and below (NOT SUPPORTED - Missing features)
+#
+# WHY PYTHON 3.12?
+# - Official binary installers available (unlike 3.11 security-only mode)
+# - 5-10% better performance than 3.11
+# - All scientific packages now have 3.12 wheel distributions
+# - Active bug fixes and feature updates
 #
 # INSTALLATION TROUBLESHOOTING:
 # If you encounter errors, try these commands in order:
@@ -18,7 +24,7 @@
 # 5. For Linux: Install build-essential and python3-dev
 #
 # ALTERNATIVE INSTALLATION (CONDA - RECOMMENDED FOR PROBLEMATIC SYSTEMS):
-# conda create -n loopy-comfy python=3.11
+# conda create -n loopy-comfy python=3.12
 # conda activate loopy-comfy
 # conda install numpy opencv scipy scikit-learn
 # pip install ffmpeg-python imageio imageio-ffmpeg pytest pytest-cov
