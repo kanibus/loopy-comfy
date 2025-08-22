@@ -1,23 +1,55 @@
-# Python 3.11+ Required for optimal compatibility
+# ============================================================================
+# LOOPY COMFY REQUIREMENTS
+# ============================================================================
+# 
+# PYTHON VERSION COMPATIBILITY:
+# ✅ Python 3.11.x (RECOMMENDED - Best compatibility)
+# ✅ Python 3.10.x (Supported - Good compatibility) 
+# ⚠️  Python 3.12.x (Limited - May have issues with some packages)
+# ❌ Python 3.13+ (NOT SUPPORTED - Missing wheel distributions)
+# ❌ Python 3.9 and below (NOT SUPPORTED - Missing features)
+#
+# INSTALLATION TROUBLESHOOTING:
+# If you encounter errors, try these commands in order:
+# 1. pip install setuptools wheel
+# 2. pip install -r requirements.txt
+# 3. For Windows: Use Visual Studio Build Tools if compilation fails
+# 4. For macOS: Install Xcode Command Line Tools
+# 5. For Linux: Install build-essential and python3-dev
+#
+# ALTERNATIVE INSTALLATION (CONDA - RECOMMENDED FOR PROBLEMATIC SYSTEMS):
+# conda create -n loopy-comfy python=3.11
+# conda activate loopy-comfy
+# conda install numpy opencv scipy scikit-learn
+# pip install ffmpeg-python imageio imageio-ffmpeg pytest pytest-cov
+# ============================================================================
 
-# Core Processing  
-numpy>=1.24.3,<2.0.0
-opencv-python>=4.8.1.78
-Pillow>=10.0.0
+# Build System Requirements (Install FIRST if you have issues)
+setuptools>=65.0.0,<70.0.0
+wheel>=0.40.0,<1.0.0
+pip>=23.0.0
 
-# Video Encoding
-ffmpeg-python>=0.2.0
-imageio>=2.31.5
-imageio-ffmpeg>=0.4.9
+# Core Numerical Computing
+numpy>=1.24.0,<2.0.0           # Mathematical operations and arrays
+scipy>=1.10.0,<2.0.0           # Scientific computing functions
 
-# Scientific Computing
-scipy>=1.11.0
-scikit-learn>=1.3.0
+# Computer Vision and Image Processing  
+opencv-python>=4.8.0,<5.0.0    # Video and image processing
+Pillow>=10.0.0,<11.0.0         # Image manipulation and formats
 
-# Build Dependencies (for compatibility)
-setuptools>=65.0.0
-wheel>=0.40.0
+# Video Processing and Encoding
+ffmpeg-python>=0.2.0,<1.0.0    # FFmpeg wrapper for video encoding
+imageio>=2.30.0,<3.0.0         # Image and video I/O operations
+imageio-ffmpeg>=0.4.8,<1.0.0   # FFmpeg backend for imageio
 
-# Development Tools (for testing)
-pytest>=7.4.0
-pytest-cov>=4.1.0
+# Machine Learning (Optional - for future features)
+scikit-learn>=1.3.0,<2.0.0     # Machine learning algorithms
+
+# Development and Testing Tools (Optional)
+pytest>=7.4.0,<8.0.0           # Testing framework
+pytest-cov>=4.1.0,<5.0.0       # Coverage reporting
+
+# Platform-specific dependencies (automatically handled by pip)
+# Windows: Microsoft Visual C++ 14.0+ (auto-installed with setuptools)
+# macOS: Xcode Command Line Tools (install with: xcode-select --install)  
+# Linux: build-essential python3-dev (install with package manager)

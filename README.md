@@ -47,12 +47,22 @@ Our Markov chain engine analyzes your video collection and generates intelligent
 ### Prerequisites
 
 - **ComfyUI** installed and working
-- **Python 3.11+** (recommended for best compatibility)
+- **Python 3.11.x** (STRONGLY RECOMMENDED - see compatibility matrix below)
 - **FFmpeg** installed system-wide
 - **8GB+ RAM** recommended
 - **GPU** with 4GB+ VRAM (RTX 3060 or better recommended)
 
-> ⚠️ **Python Version Important**: Use Python 3.11.x for optimal compatibility. Python 3.13+ may have dependency issues.
+#### **🐍 Python Version Compatibility Matrix**
+
+| Python Version | Status | Compatibility | Issues |
+|---------------|--------|---------------|--------|
+| **3.11.x** | ✅ **RECOMMENDED** | Excellent | None - all packages have wheels |
+| 3.10.x | ✅ Supported | Good | Minor performance differences |
+| 3.12.x | ⚠️ Limited | Partial | Some packages may need compilation |
+| 3.13+ | ❌ **NOT SUPPORTED** | Poor | Missing wheel distributions |
+| 3.9 and below | ❌ **NOT SUPPORTED** | None | Missing required features |
+
+> 🚨 **CRITICAL**: If you're using Python 3.13+, you WILL encounter installation errors. Please switch to Python 3.11.x first.
 
 ### Installation
 
@@ -69,19 +79,38 @@ Our Markov chain engine analyzes your video collection and generates intelligent
 
 3. **Install Python dependencies:**
    ```bash
-   # Ensure you have Python 3.11.x active
-   python --version  # Should show Python 3.11.x
+   # STEP 1: Verify Python version (CRITICAL)
+   python --version  # Must show Python 3.11.x
    
-   # Install dependencies
+   # STEP 2: Install dependencies
    pip install -r requirements.txt
    ```
    
-   **If you encounter installation errors:**
+   **🚨 If you encounter installation errors, try these solutions IN ORDER:**
+   
+   **Method A - Install Build Tools First:**
    ```bash
-   # Try installing build tools first
    pip install setuptools wheel
    pip install -r requirements.txt
    ```
+   
+   **Method B - Use Conda (MOST RELIABLE):**
+   ```bash
+   # Install Miniconda/Anaconda first, then:
+   conda create -n loopy-comfy python=3.11
+   conda activate loopy-comfy
+   conda install numpy opencv scipy scikit-learn pillow
+   pip install ffmpeg-python imageio imageio-ffmpeg
+   ```
+   
+   **Method C - Platform-Specific Build Tools:**
+   ```bash
+   # Windows: Install Visual Studio Build Tools
+   # macOS: xcode-select --install  
+   # Linux: sudo apt install build-essential python3-dev
+   ```
+   
+   > 📖 **Need More Help?** See our comprehensive [Installation Troubleshooting Guide](docs/INSTALLATION_TROUBLESHOOTING.md)
 
 4. **Restart ComfyUI**
    - The nodes will appear in the `video/avatar` category
@@ -267,39 +296,52 @@ pytest tests/ --cov=core --cov=nodes --cov=utils --cov-report=html
 
 ## 🛠️ Troubleshooting
 
-### Common Issues
+> 📖 **Complete Troubleshooting Guide**: [Installation Troubleshooting Guide](docs/INSTALLATION_TROUBLESHOOTING.md)
 
-**"Import error: No module named 'numpy'"**
+### **🚨 Critical Issues (READ FIRST)**
+
+#### **Problem: Python 3.13+ Installation Errors**
+**Error:** `BackendUnavailable: Cannot import 'setuptools.build_meta'`
+
+**Solution:** Switch to Python 3.11.x:
 ```bash
-pip install -r requirements.txt
+# Check current version
+python --version
+
+# If not 3.11.x, install Python 3.11:
+# Windows: Download from python.org
+# macOS: brew install python@3.11
+# Linux: sudo apt install python3.11
 ```
 
-**"FFmpeg not found"**
+#### **Problem: "Some Nodes Are Missing" in ComfyUI**
+**Solution:** 
+1. Restart ComfyUI completely (Ctrl+C, wait, restart)
+2. Check console for import errors
+3. Verify installation: `python -c "from nodes.video_asset_loader import LoopyComfy_VideoAssetLoader; print('SUCCESS')"`
+
+### **⚡ Quick Fixes**
+
+| Problem | Quick Solution |
+|---------|----------------|
+| **Import error: No module named 'numpy'** | `pip install setuptools wheel` then `pip install -r requirements.txt` |
+| **FFmpeg not found** | Windows: `choco install ffmpeg` • macOS: `brew install ffmpeg` • Linux: `sudo apt install ffmpeg` |
+| **Out of memory** | Reduce `batch_size` to 5, lower resolution, limit `max_videos` to 50 |
+| **No seamless loops detected** | Disable `validate_seamless` or check video loop quality |
+| **Build compilation errors** | Use conda method or install platform build tools |
+
+### **🆘 Emergency Installation (When Nothing Works)**
 ```bash
-# Ubuntu/Debian
-sudo apt install ffmpeg
+# Last resort - conda method
+conda create -n loopy-comfy python=3.11
+conda activate loopy-comfy  
+conda install numpy opencv scipy scikit-learn pillow
+pip install ffmpeg-python imageio imageio-ffmpeg
 
-# Windows (via chocolatey)
-choco install ffmpeg
-
-# macOS (via homebrew)  
-brew install ffmpeg
+# Then always activate before using:
+conda activate loopy-comfy
+# Start ComfyUI
 ```
-
-**"Out of memory" during composition**
-- Reduce `batch_size` in Video Sequence Composer
-- Lower output resolution
-- Reduce `max_videos` in Asset Loader
-
-**"No seamless loops detected"**
-- Check video quality (first/last frames should match)
-- Disable `validate_seamless` temporarily
-- Manually verify loop points in video editor
-
-**Nodes not appearing in ComfyUI**
-- Restart ComfyUI completely
-- Check console for import errors
-- Verify Python path and dependencies
 
 ### Performance Issues
 
@@ -323,10 +365,11 @@ brew install ffmpeg
 - **Quality**: Frame-perfect transitions, zero artifacts
 
 ### Compatibility
-- **ComfyUI**: All recent versions
-- **Python**: 3.10, 3.11, 3.12
+- **ComfyUI**: All recent versions (tested with latest)
+- **Python**: 3.11.x (recommended), 3.10.x (supported), 3.12.x (limited)
 - **Operating Systems**: Windows 10/11, Ubuntu 20.04+, macOS 12+
 - **GPUs**: Any CUDA-compatible (recommended: RTX 3060+)
+- **Dependencies**: See [requirements.txt](requirements.txt) for exact versions
 
 ### Mathematical Guarantees
 - **Zero immediate repetitions** (proven with 10,000-iteration testing)
