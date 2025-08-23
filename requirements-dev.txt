@@ -1,4 +1,10 @@
 # Development dependencies for ComfyUI NonLinear Video Avatar
+#
+# IMPORTANT: Install main requirements first with:
+# pip install -r requirements.txt
+# 
+# Then install dev dependencies with:
+# pip install -r requirements-dev.txt
 
 # Testing
 pytest>=7.4.3
