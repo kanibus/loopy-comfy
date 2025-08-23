@@ -28,7 +28,7 @@
         "./assets/avatar_collection",
         "*.mp4",
         true,
-        100
+        100.0
       ],
       "color": "#432",
       "bgcolor": "#653"
@@ -70,7 +70,8 @@
       },
       "widgets_values": [
         30.0,
-        true,
+        10,
+        0.2,
         123
       ],
       "color": "#432",
@@ -106,8 +107,9 @@
         "Node name for S&R": "LoopyComfy_VideoSequenceComposer"
       },
       "widgets_values": [
-        30,
-        "3840x2160",
+        30.0,
+        3840,
+        2160,
         5
       ],
       "color": "#432",
@@ -144,9 +146,9 @@
       },
       "widgets_values": [
         "advanced_avatar_30min_4K",
+        "./output/high_quality",
         "h265",
-        18,
-        "./output/high_quality"
+        18
       ],
       "color": "#432",
       "bgcolor": "#653"

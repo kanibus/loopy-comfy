@@ -28,7 +28,7 @@
         "./assets/sample_videos",
         "*.mp4",
         true,
-        0
+        100.0
       ],
       "color": "#432",
       "bgcolor": "#653"
@@ -70,7 +70,8 @@
       },
       "widgets_values": [
         5.0,
-        true,
+        5,
+        0.1,
         42
       ],
       "color": "#432",
@@ -106,8 +107,9 @@
         "Node name for S&R": "LoopyComfy_VideoSequenceComposer"
       },
       "widgets_values": [
-        30,
-        "1920x1080",
+        30.0,
+        1920,
+        1080,
         10
       ],
       "color": "#432",
@@ -144,9 +146,9 @@
       },
       "widgets_values": [
         "basic_avatar_5min",
+        "./output",
         "h264",
-        23,
-        "./output"
+        23
       ],
       "color": "#432",
       "bgcolor": "#653"
