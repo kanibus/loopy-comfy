@@ -244,7 +244,7 @@ python --version  # Must be 3.12.x
 cd ComfyUI/custom_nodes/
 
 # 3. Clone repository
-git clone https://github.com/kanibus/loopy-comfy.git
+git clone https://github.com/YOUR_GITHUB_USERNAME/loopy-comfy.git
 cd loopy-comfy
 
 # 4. Install dependencies (try each step if previous fails)
@@ -273,7 +273,7 @@ pip install ffmpeg-python imageio imageio-ffmpeg pytest pytest-cov
 
 # 5. Navigate and clone
 cd ComfyUI/custom_nodes/
-git clone https://github.com/kanibus/loopy-comfy.git
+git clone https://github.com/YOUR_GITHUB_USERNAME/loopy-comfy.git
 
 # 6. Always activate environment before starting ComfyUI
 conda activate loopy-comfy
@@ -363,7 +363,7 @@ python -c "import numpy, cv2; print('Core OK')"
 ```
 
 ### **Community Support:**
-- **GitHub Issues**: [Report bugs](https://github.com/kanibus/loopy-comfy/issues)
+- **GitHub Issues**: [Report bugs](https://github.com/YOUR_GITHUB_USERNAME/loopy-comfy/issues)
 - **ComfyUI Discord**: General ComfyUI help
 - **Stack Overflow**: Tag `python`, `opencv`, `ffmpeg`
 

@@ -115,7 +115,7 @@ ComfyUI-NonLinearVideoAvatar/           # 📁 Project root
 cd ComfyUI/custom_nodes/
 
 # Clone the repository
-git clone https://github.com/kanibus/loopy-comfy.git ComfyUI-NonLinearVideoAvatar
+git clone https://github.com/YOUR_GITHUB_USERNAME/loopy-comfy.git ComfyUI-NonLinearVideoAvatar
 
 # Enter directory
 cd ComfyUI-NonLinearVideoAvatar

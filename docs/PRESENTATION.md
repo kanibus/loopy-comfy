@@ -169,7 +169,7 @@ A → C → D → B → F → A → E... (natural, non-repetitive)
 cd ComfyUI/custom_nodes/
 
 # 2. Clone repository
-git clone https://github.com/kanibus/loopy-comfy.git ComfyUI-NonLinearVideoAvatar
+git clone https://github.com/YOUR_GITHUB_USERNAME/loopy-comfy.git ComfyUI-NonLinearVideoAvatar
 
 # 3. Install dependencies
 cd ComfyUI-NonLinearVideoAvatar
@@ -456,7 +456,7 @@ brew install ffmpeg
 ### **Installation Command:**
 ```bash
 cd ComfyUI/custom_nodes/
-git clone https://github.com/kanibus/loopy-comfy.git ComfyUI-NonLinearVideoAvatar
+git clone https://github.com/YOUR_GITHUB_USERNAME/loopy-comfy.git ComfyUI-NonLinearVideoAvatar
 cd ComfyUI-NonLinearVideoAvatar
 pip install -r requirements.txt
 ```
@@ -467,9 +467,9 @@ pytest tests/test_markov_engine.py::test_no_repetition_10000_iterations -v
 ```
 
 ### **Resources:**
-- 📖 **Documentation**: [GitHub Wiki](https://github.com/kanibus/loopy-comfy/wiki)
-- 🐛 **Issues**: [GitHub Issues](https://github.com/kanibus/loopy-comfy/issues)
-- 💬 **Discussions**: [GitHub Discussions](https://github.com/kanibus/loopy-comfy/discussions)
+- 📖 **Documentation**: [GitHub Wiki](https://github.com/YOUR_GITHUB_USERNAME/loopy-comfy/wiki)
+- 🐛 **Issues**: [GitHub Issues](https://github.com/YOUR_GITHUB_USERNAME/loopy-comfy/issues)
+- 💬 **Discussions**: [GitHub Discussions](https://github.com/YOUR_GITHUB_USERNAME/loopy-comfy/discussions)
 - 📧 **Support**: Community-driven development
 
 ### **Next Steps:**

@@ -17,7 +17,7 @@ from nodes.video_asset_loader import LoopyComfy_VideoAssetLoader
 from nodes.markov_sequencer import LoopyComfy_MarkovVideoSequencer
 from nodes.video_composer import LoopyComfy_VideoSequenceComposer
 from nodes.video_saver import LoopyComfy_VideoSaver
-from conftest import create_test_video
+from .conftest import create_test_video
 
 
 class TestIntegration:

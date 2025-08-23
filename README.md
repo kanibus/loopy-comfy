@@ -76,7 +76,7 @@ Our Markov chain engine analyzes your video collection and generates intelligent
 
 2. **Clone the repository:**
    ```bash
-   git clone https://github.com/kanibus/loopy-comfy.git loopy-comfy
+   git clone https://github.com/YOUR_GITHUB_USERNAME/loopy-comfy.git loopy-comfy
    cd loopy-comfy
    ```
 
@@ -388,7 +388,7 @@ We welcome contributions! See our [Contributing Guide](CONTRIBUTING.md) for deta
 
 ### Development Setup
 ```bash
-git clone https://github.com/kanibus/loopy-comfy.git
+git clone https://github.com/YOUR_GITHUB_USERNAME/loopy-comfy.git
 cd loopy-comfy
 pip install -r requirements.txt
 pip install -r requirements-dev.txt
@@ -413,9 +413,9 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📞 Support
 
-- **Issues**: [GitHub Issues](https://github.com/kanibus/loopy-comfy/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/kanibus/loopy-comfy/discussions)
-- **Documentation**: [Wiki](https://github.com/kanibus/loopy-comfy/wiki)
+- **Issues**: [GitHub Issues](https://github.com/YOUR_GITHUB_USERNAME/loopy-comfy/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/YOUR_GITHUB_USERNAME/loopy-comfy/discussions)
+- **Documentation**: [Wiki](https://github.com/YOUR_GITHUB_USERNAME/loopy-comfy/wiki)
 
 ---
 

@@ -19,7 +19,7 @@ from nodes.markov_sequencer import LoopyComfy_MarkovVideoSequencer
 from nodes.video_composer import LoopyComfy_VideoSequenceComposer
 from nodes.video_saver import LoopyComfy_VideoSaver
 from core.markov_engine import MarkovTransitionEngine, MarkovState, validate_no_repetition
-from conftest import create_test_video
+from .conftest import create_test_video
 
 
 class TestEdgeCases:

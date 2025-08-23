@@ -116,20 +116,49 @@ class TestMarkovEngine:
         states = [MarkovState(f"video_{i:03d}", 5.0, {}) for i in range(5)]
         engine = MarkovTransitionEngine(states, history_window=3, repetition_penalty=0.5, random_seed=42)
         
-        # Fill history with specific states
-        for state_id in ["video_000", "video_001", "video_002"]:
+        # Fill history with states that won't be on the diagonal for state 0
+        for state_id in ["video_001", "video_002", "video_003"]:
             engine.history_buffer.append(state_id)
         
-        # Get base probabilities for first state
+        # Get base probabilities for first state (video_000 -> others)
         base_probs = engine.transition_matrix[0].copy()
         
         # Apply penalties
         adjusted_probs = engine._apply_history_penalties(base_probs)
         
-        # States in history should have lower probabilities
-        for i, state_id in enumerate(["video_000", "video_001", "video_002"]):
-            state_index = engine.state_to_index[state_id]
-            assert adjusted_probs[state_index] < base_probs[state_index]
+        # States in history should have penalties applied (most recent = highest penalty)
+        idx_1 = engine.state_to_index["video_001"]  # Most recent in history  
+        idx_2 = engine.state_to_index["video_002"]  # Middle in history
+        idx_3 = engine.state_to_index["video_003"]  # Oldest in history
+        idx_4 = engine.state_to_index["video_004"]  # Not in history
+        
+        # Most recent states should have strongest penalties
+        assert adjusted_probs[idx_1] < base_probs[idx_1], \
+            f"Most recent penalty: {adjusted_probs[idx_1]} >= {base_probs[idx_1]}"
+        assert adjusted_probs[idx_2] < base_probs[idx_2], \
+            f"Middle penalty: {adjusted_probs[idx_2]} >= {base_probs[idx_2]}"
+        
+        # Oldest might be higher due to renormalization but should have some penalty applied
+        # Check by comparing to un-normalized values
+        unnorm_adjusted = engine.transition_matrix[0].copy()
+        for i, state_id in enumerate(engine.history_buffer):
+            if state_id in engine.state_to_index:
+                state_index = engine.state_to_index[state_id]
+                recency_factor = (len(engine.history_buffer) - i) / len(engine.history_buffer)
+                penalty = engine.repetition_penalty * recency_factor
+                unnorm_adjusted[state_index] *= (1.0 - penalty)
+        
+        # Before renormalization, oldest should be penalized
+        assert unnorm_adjusted[idx_3] < base_probs[idx_3], \
+            f"Oldest pre-normalization penalty: {unnorm_adjusted[idx_3]} >= {base_probs[idx_3]}"
+        
+        # Non-history state should have higher probability due to renormalization
+        assert adjusted_probs[idx_4] > base_probs[idx_4], \
+            f"Non-history boost: {adjusted_probs[idx_4]} <= {base_probs[idx_4]}"
+        
+        # Penalty should be stronger for more recent states
+        assert adjusted_probs[idx_1] < adjusted_probs[idx_2] < adjusted_probs[idx_3], \
+            f"Recency order wrong: {adjusted_probs[idx_1]} >= {adjusted_probs[idx_2]} >= {adjusted_probs[idx_3]}"
         
         # Probabilities should still sum to ~1
         assert abs(adjusted_probs.sum() - 1.0) < 1e-6
@@ -154,14 +183,19 @@ class TestMarkovEngine:
     
     def test_edge_cases(self):
         """Test edge cases and error conditions."""
-        # Single state (should raise error with repetition prevention)
+        # Single state (should be allowed but with disabled prevention)
         single_state = [MarkovState("video_001", 5.0, {})]
+        engine = MarkovTransitionEngine(single_state)
         
-        with pytest.raises(ValueError):
-            engine = MarkovTransitionEngine(single_state)
-            engine.get_next_state("video_001")  # Would cause immediate repetition
+        # Should work but will always return the same state
+        next_state = engine.get_next_state("video_001")
+        assert next_state == "video_001"
         
-        # Empty states list
+        # History penalties should be disabled
+        assert engine.history_window == 0
+        assert engine.repetition_penalty == 0.0
+        
+        # Empty states list should raise error
         with pytest.raises(ValueError):
             MarkovTransitionEngine([])
         

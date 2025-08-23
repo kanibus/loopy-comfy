@@ -1,0 +1,210 @@
+/* Non-Linear Video Avatar - ComfyUI Styling */
+
+/* Enhanced tooltips for all LoopyComfy nodes */
+.graphnode[data-title*="LoopyComfy"] .comfy-tooltip {
+    max-width: 350px;
+    font-size: 12px;
+    line-height: 1.4;
+    padding: 10px 14px;
+    background: linear-gradient(135deg, rgba(20, 20, 20, 0.95), rgba(40, 40, 40, 0.95));
+    border: 1px solid #666;
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(8px);
+    color: #fff;
+}
+
+/* Node styling improvements */
+.graphnode[data-title*="LoopyComfy"] {
+    border-radius: 8px;
+    background: linear-gradient(135deg, #2a2a2a, #1a1a1a);
+    border: 1px solid #555;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.graphnode[data-title*="VideoAssetLoader"] {
+    border-left: 4px solid #4a9eff;
+}
+
+.graphnode[data-title*="MarkovVideoSequencer"] {
+    border-left: 4px solid #ff6b4a;
+}
+
+.graphnode[data-title*="VideoSequenceComposer"] {
+    border-left: 4px solid #4aff6b;
+}
+
+.graphnode[data-title*="VideoSaver"] {
+    border-left: 4px solid #ff4a9e;
+}
+
+/* Widget styling */
+.folder-browser-widget {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.folder-browser-widget input {
+    transition: all 0.2s ease;
+}
+
+.folder-browser-widget input:focus {
+    border-color: #4a9eff;
+    box-shadow: 0 0 0 2px rgba(74, 158, 255, 0.2);
+    outline: none;
+}
+
+.folder-browser-widget button {
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.folder-browser-widget button:active {
+    transform: scale(0.95);
+}
+
+/* Resolution preset widget */
+.resolution-preset-widget select {
+    transition: all 0.2s ease;
+}
+
+.resolution-preset-widget select:hover {
+    border-color: #666;
+}
+
+/* Progress widget animations */
+.progress-widget {
+    animation: fadeInUp 0.3s ease-out;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.progress-widget .progress-fill {
+    background: linear-gradient(90deg, 
+        #4a9eff 0%, 
+        #00d4aa 50%, 
+        #4aff6b 100%
+    );
+    background-size: 200% 100%;
+    animation: progressShimmer 2s ease-in-out infinite;
+}
+
+@keyframes progressShimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+/* Memory usage indicator */
+.memory-indicator {
+    display: inline-flex;
+    align-items: center;
+    font-size: 10px;
+    color: #999;
+    gap: 4px;
+}
+
+.memory-indicator.warning {
+    color: #ffaa4a;
+}
+
+.memory-indicator.critical {
+    color: #ff4a4a;
+    animation: pulse 1s ease-in-out infinite alternate;
+}
+
+@keyframes pulse {
+    from { opacity: 0.7; }
+    to { opacity: 1; }
+}
+
+/* Platform preset indicators */
+.platform-preset-youtube::before { content: "📺 "; }
+.platform-preset-tiktok::before { content: "📱 "; }
+.platform-preset-instagram::before { content: "📷 "; }
+.platform-preset-twitter::before { content: "🐦 "; }
+.platform-preset-professional::before { content: "🎬 "; }
+.platform-preset-archive::before { content: "📦 "; }
+
+/* Status indicators */
+.status-indicator {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 6px;
+}
+
+.status-indicator.ready { background: #4aff6b; }
+.status-indicator.processing { 
+    background: #ffaa4a; 
+    animation: pulse 1s ease-in-out infinite alternate;
+}
+.status-indicator.error { background: #ff4a4a; }
+.status-indicator.warning { background: #ffaa4a; }
+
+/* Enhanced input validation */
+.input-error {
+    border-color: #ff4a4a !important;
+    box-shadow: 0 0 0 2px rgba(255, 74, 74, 0.2) !important;
+}
+
+.input-warning {
+    border-color: #ffaa4a !important;
+    box-shadow: 0 0 0 2px rgba(255, 170, 74, 0.2) !important;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .folder-browser-widget {
+        flex-direction: column;
+        gap: 3px;
+    }
+    
+    .folder-browser-widget input,
+    .folder-browser-widget button {
+        width: 100%;
+    }
+}
+
+/* Dark mode enhancements */
+@media (prefers-color-scheme: dark) {
+    .folder-browser-widget input,
+    .resolution-preset-widget select {
+        background: #1a1a1a;
+        border-color: #444;
+        color: #eee;
+    }
+    
+    .progress-widget {
+        background: #1a1a1a;
+        border-color: #444;
+    }
+}
+
+/* Accessibility improvements */
+.folder-browser-widget button:focus,
+.resolution-preset-widget select:focus {
+    outline: 2px solid #4a9eff;
+    outline-offset: 2px;
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+    .folder-browser-widget input,
+    .resolution-preset-widget select {
+        border-width: 2px;
+    }
+    
+    .status-indicator {
+        border: 1px solid #fff;
+    }
+}

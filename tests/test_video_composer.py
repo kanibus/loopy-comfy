@@ -14,7 +14,7 @@ from unittest.mock import Mock, patch, MagicMock
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from nodes.video_composer import LoopyComfy_VideoSequenceComposer
-from conftest import create_test_video
+from .conftest import create_test_video
 
 
 class TestVideoSequenceComposer:
