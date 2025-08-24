@@ -18,43 +18,128 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 if current_dir not in sys.path:
     sys.path.insert(0, current_dir)
 
-# FIXED: Absolute imports work in ComfyUI environment (replaced relative imports)
-try:
-    from nodes.video_asset_loader import LoopyComfy_VideoAssetLoader
-    from nodes.markov_sequencer import LoopyComfy_MarkovVideoSequencer  
-    from nodes.video_composer import LoopyComfy_VideoSequenceComposer
-    from nodes.video_saver import LoopyComfy_VideoSaver
+# ENHANCED: Robust import with detailed diagnostics and dependency checking
+_IMPORTS_SUCCESSFUL = False
+_IMPORT_ERRORS = []
+
+def check_dependencies():
+    """Check for required dependencies and provide detailed diagnostics."""
+    missing_deps = []
     
-    # Import success flag for debugging
+    # Test critical dependencies
+    critical_deps = [
+        ('numpy', 'numpy'),
+        ('cv2', 'opencv-python'), 
+        ('psutil', 'psutil'),
+        ('scipy', 'scipy'),
+        ('PIL', 'Pillow'),
+        ('imageio', 'imageio'),
+        ('ffmpeg', 'ffmpeg-python')
+    ]
+    
+    for dep_name, pip_name in critical_deps:
+        try:
+            __import__(dep_name)
+        except ImportError:
+            missing_deps.append(pip_name)
+    
+    return missing_deps
+
+# Check dependencies first
+missing_deps = check_dependencies()
+if missing_deps:
+    print("=" * 60)
+    print("LOOPY-COMFY DEPENDENCY ERROR")
+    print("=" * 60)
+    print(f"Missing required dependencies: {', '.join(missing_deps)}")
+    print("\nTo fix this issue, run:")
+    print(f"pip install {' '.join(missing_deps)}")
+    print("\nOr install all dependencies:")
+    print("pip install -r requirements.txt")
+    print("=" * 60)
+
+# Try importing nodes with detailed error reporting
+try:
+    # Test each node individually for better error reporting
+    print("Loading LoopyComfy nodes...")
+    
+    from nodes.video_asset_loader import LoopyComfy_VideoAssetLoader
+    print("- VideoAssetLoader: OK")
+    
+    from nodes.markov_sequencer import LoopyComfy_MarkovVideoSequencer  
+    print("- MarkovVideoSequencer: OK")
+    
+    from nodes.video_composer import LoopyComfy_VideoSequenceComposer
+    print("- VideoSequenceComposer: OK")
+    
+    from nodes.video_saver import LoopyComfy_VideoSaver
+    print("- VideoSaver: OK")
+    
     _IMPORTS_SUCCESSFUL = True
+    print("SUCCESS: Loopy-Comfy nodes loaded!")
     
 except ImportError as e:
-    # Fallback error handling for debugging
-    print(f"LOOPY-COMFY IMPORT ERROR: {e}")
+    print("=" * 60)
+    print("LOOPY-COMFY NODE IMPORT ERROR")
+    print("=" * 60)
+    print(f"Error: {e}")
     print(f"Python path: {sys.path}")
     print(f"Current directory: {current_dir}")
+    print("\nTroubleshooting steps:")
+    print("1. Ensure all dependencies are installed: pip install -r requirements.txt")
+    print("2. Check that psutil is installed: pip install psutil>=5.9.6") 
+    print("3. Restart ComfyUI after installing dependencies")
+    print("4. Check the COMFYUI_INSTALLATION.md file for detailed instructions")
+    print("=" * 60)
     _IMPORTS_SUCCESSFUL = False
+    _IMPORT_ERRORS.append(str(e))
     
-    # Create dummy classes to prevent ComfyUI crashes during development
+    # Create minimal working dummy classes that won't break ComfyUI
     class LoopyComfy_VideoAssetLoader:
         @classmethod
         def INPUT_TYPES(cls):
-            return {"required": {}}
+            return {"required": {"error_info": ("STRING", {"default": "Node failed to load - check console"})}}
+        
+        RETURN_TYPES = ("STRING",)
+        RETURN_NAMES = ("error",)
+        FUNCTION = "show_error"
+        CATEGORY = "loopy-comfy"
+        
+        def show_error(self, error_info):
+            return (f"Import error: {_IMPORT_ERRORS[0] if _IMPORT_ERRORS else 'Unknown error'}",)
     
     class LoopyComfy_MarkovVideoSequencer:
         @classmethod
         def INPUT_TYPES(cls):
-            return {"required": {}}
+            return {"required": {"error_info": ("STRING", {"default": "Node failed to load - check console"})}}
+        RETURN_TYPES = ("STRING",)
+        RETURN_NAMES = ("error",)
+        FUNCTION = "show_error"
+        CATEGORY = "loopy-comfy"
+        def show_error(self, error_info):
+            return (f"Import error: {_IMPORT_ERRORS[0] if _IMPORT_ERRORS else 'Unknown error'}",)
     
     class LoopyComfy_VideoSequenceComposer:
         @classmethod
         def INPUT_TYPES(cls):
-            return {"required": {}}
+            return {"required": {"error_info": ("STRING", {"default": "Node failed to load - check console"})}}
+        RETURN_TYPES = ("STRING",)
+        RETURN_NAMES = ("error",)
+        FUNCTION = "show_error"
+        CATEGORY = "loopy-comfy"
+        def show_error(self, error_info):
+            return (f"Import error: {_IMPORT_ERRORS[0] if _IMPORT_ERRORS else 'Unknown error'}",)
     
     class LoopyComfy_VideoSaver:
         @classmethod
         def INPUT_TYPES(cls):
-            return {"required": {}}
+            return {"required": {"error_info": ("STRING", {"default": "Node failed to load - check console"})}}
+        RETURN_TYPES = ("STRING",)
+        RETURN_NAMES = ("error",)
+        FUNCTION = "show_error"
+        CATEGORY = "loopy-comfy"
+        def show_error(self, error_info):
+            return (f"Import error: {_IMPORT_ERRORS[0] if _IMPORT_ERRORS else 'Unknown error'}",)
 
 # Node class mappings for ComfyUI registration
 NODE_CLASS_MAPPINGS = {
