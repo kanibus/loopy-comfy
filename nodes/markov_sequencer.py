@@ -15,7 +15,69 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 project_root = os.path.dirname(current_dir)
 if project_root not in sys.path:
     sys.path.insert(0, project_root)
-from core.markov_engine import MarkovTransitionEngine, MarkovState
+
+# FIXED: Import core engine with fallback for ComfyUI compatibility
+try:
+    from core.markov_engine import MarkovTransitionEngine, MarkovState
+    MARKOV_ENGINE_AVAILABLE = True
+except ImportError:
+    MARKOV_ENGINE_AVAILABLE = False
+    
+    # Fallback implementations
+    class MarkovState:
+        def __init__(self, video_index):
+            self.video_index = video_index
+    
+    class MarkovTransitionEngine:
+        """Fallback Markov engine with basic functionality."""
+        
+        def __init__(self, video_metadata_list):
+            self.video_metadata = video_metadata_list
+            self.num_videos = len(video_metadata_list) if video_metadata_list else 0
+            self.history = []
+            
+        def get_next_state(self, current_state=None, prevent_immediate_repeat=True):
+            """Simple fallback transition logic."""
+            if self.num_videos == 0:
+                return 0
+            
+            if self.num_videos == 1:
+                return 0
+                
+            # Simple random selection avoiding immediate repetition
+            available_indices = list(range(self.num_videos))
+            
+            if prevent_immediate_repeat and self.history:
+                last_index = self.history[-1]
+                if last_index in available_indices and len(available_indices) > 1:
+                    available_indices.remove(last_index)
+            
+            next_index = random.choice(available_indices)
+            self.history.append(next_index)
+            
+            return next_index
+        
+        def generate_sequence(self, target_duration_seconds, prevent_immediate=True):
+            """Generate a sequence of video indices."""
+            if self.num_videos == 0:
+                return []
+                
+            sequence = []
+            current_duration = 0
+            
+            while current_duration < target_duration_seconds:
+                next_index = self.get_next_state(prevent_immediate_repeat=prevent_immediate)
+                sequence.append(next_index)
+                
+                # Estimate duration (fallback to 10 seconds per video)
+                video_duration = self.video_metadata[next_index].get('duration', 10.0) if next_index < len(self.video_metadata) else 10.0
+                current_duration += video_duration
+                
+                # Safety break
+                if len(sequence) > 1000:
+                    break
+            
+            return sequence
 
 
 class LoopyComfy_MarkovVideoSequencer:

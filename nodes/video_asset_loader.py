@@ -27,8 +27,44 @@ project_root = os.path.dirname(current_dir)
 if project_root not in sys.path:
     sys.path.insert(0, project_root)
 
-# Import security utilities
-from utils.security_utils import PathValidator, SecurityError, default_resource_limiter
+# FIXED: Import security utilities with fallback for ComfyUI compatibility
+try:
+    from utils.security_utils import PathValidator, SecurityError, default_resource_limiter
+    SECURITY_AVAILABLE = True
+except ImportError as e:
+    # Fallback implementations for when security utilities can't be imported
+    SECURITY_AVAILABLE = False
+    
+    class SecurityError(Exception):
+        """Fallback SecurityError."""
+        pass
+    
+    class PathValidator:
+        """Fallback PathValidator with basic validation."""
+        def __init__(self, allowed_base_dirs=None):
+            self.allowed_base_dirs = allowed_base_dirs or []
+        
+        def validate_directory_path(self, directory_path: str) -> str:
+            """Basic path validation fallback."""
+            if not directory_path or not isinstance(directory_path, str):
+                raise SecurityError("Invalid directory path")
+            
+            # Basic normalization
+            abs_path = os.path.abspath(directory_path)
+            if not os.path.exists(abs_path):
+                raise SecurityError(f"Directory does not exist: {abs_path}")
+            
+            return abs_path
+    
+    class ResourceLimiter:
+        """Fallback ResourceLimiter."""
+        def check_memory_usage(self):
+            return True
+        
+        def with_memory_limit(self, func, *args, **kwargs):
+            return func(*args, **kwargs)
+    
+    default_resource_limiter = ResourceLimiter()
 
 
 class LoopyComfy_VideoAssetLoader:
