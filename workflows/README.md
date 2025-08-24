@@ -51,6 +51,37 @@ This directory contains example ComfyUI workflow files demonstrating how to use 
 
 ---
 
+### 3. `ui_enhanced_workflow.json`
+**UI Enhancement Demo - All New Features**
+
+**Configuration:**
+- **Duration**: 30 seconds (demo)
+- **Resolution**: 1920x1080
+- **Quality**: Standard (CRF 23)
+- **UI Features**: All new enhancements enabled
+
+**Demonstrates:**
+- 📁 **Native OS Folder Browser**: Click "Browse Folder" for native dialog
+- 🎬 **Format Dropdown**: Descriptive codec selection (e.g., "mp4 (H.264 - Universal)")  
+- 🖼️ **Memory-Safe Preview**: 360p thumbnail preview with frame limit
+- 📊 **Video Count Display**: Shows count of videos found in selected folder
+- 💾 **Output Directory Browser**: Native dialog for output folder selection
+- 📈 **Memory Monitoring**: Real-time memory usage tracking
+- ⚠️ **Error Handling**: Graceful fallbacks when native dialogs unavailable
+
+**Use Cases:**
+- Testing new UI enhancements
+- Demonstrating native folder browser functionality  
+- Validating memory-safe preview features
+- Training users on enhanced interface
+
+**Assets Needed:**
+- 10-20 video clips in any directory
+- Use the folder browser to select your video directory
+- Supports all common video formats (.mp4, .mov, .avi, .webm, .mkv)
+
+---
+
 ## How to Use These Workflows
 
 ### Step 1: Prepare Your Video Assets

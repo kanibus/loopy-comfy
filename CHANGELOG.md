@@ -27,6 +27,49 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
 - N/A
 
+## [1.2.0] - 2024-12-21 - UI Enhancements & Bug Fixes Release
+
+### Added
+- **Native OS Folder Browser**: Tkinter-based folder selection dialogs for video input and output directories
+- **FFmpeg Format Dropdown**: Descriptive format selection with codec information (e.g., "mp4 (H.264 - Universal)")
+- **Memory-Safe Preview**: 360p preview with 150-frame limit and 1GB memory constraint enforcement
+- **Server API Extensions**: `/loopycomfy/browse_folder` and `/loopycomfy/browse_output_dir` endpoints
+- **Enhanced JavaScript UI**: New widgets for folder browsing with visual feedback and recent folder history
+- **Memory Limit Enforcement**: Hard 8GB memory limit with real-time monitoring during video processing
+- **Comprehensive GitHub Integration**: CI/CD pipeline, issue templates, PR templates
+- **Modern Python Packaging**: pyproject.toml with full metadata and development dependencies
+- **Video Count Display**: Shows number of videos found when selecting folders
+
+### Changed
+- **VideoAssetLoader**: Added `browse_folder` and `show_preview` parameters with backward compatibility
+- **VideoSaver**: Added `browse_output_dir` parameter and enhanced format selection
+- **VideoSequenceComposer**: Improved memory monitoring with warning thresholds
+- **Security Enhancement**: Strengthened path validation with whitelist approach
+- **Codec Validation**: Optimized FFmpeg codec testing for faster validation
+
+### Fixed
+- **CRITICAL**: Fixed function signature mismatch in VideoSequenceComposer `_process_video_batch()` method
+- **SECURITY**: Fixed potential path traversal vulnerability in video asset loader
+- **PERFORMANCE**: Optimized codec validation from 320x240x0.1s to 1x1x0.01s test pattern
+- **MEMORY**: Added real-time memory limit enforcement during batch processing
+- **UI**: Fixed Unicode character issues in test output for Windows compatibility
+
+### Security
+- **Path Security**: Enhanced directory validation with explicit whitelist of allowed paths
+- **Input Sanitization**: Improved FFmpeg argument validation and metadata sanitization
+- **Memory Protection**: Hard limits prevent memory exhaustion attacks
+
+### Removed
+- Unused code comments and development artifacts
+- Legacy FFmpeg encoding method in favor of enhanced version
+
+### Technical Details
+- **Backward Compatibility**: All existing workflows continue to work unchanged
+- **Test Coverage**: 200+ test cases with comprehensive validation including 10K no-repetition tests
+- **Memory Safety**: All preview operations respect 1GB limits with graceful degradation
+- **Cross-Platform**: Full Windows/macOS/Linux support with platform-specific optimizations
+- **ComfyUI Integration**: Proper custom type definitions and node registration
+
 ## [1.1.0] - 2024-12-15
 
 ### Added

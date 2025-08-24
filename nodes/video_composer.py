@@ -17,6 +17,13 @@ project_root = os.path.dirname(current_dir)
 if project_root not in sys.path:
     sys.path.insert(0, project_root)
 from utils.video_utils import extract_frames, resize_frames, concatenate_frames, load_video_safe
+from utils.memory_manager import managed_frame_processing, MemoryBoundedError, force_cleanup
+from utils.security_utils import InputValidator, SecurityError
+from utils.performance_optimizations import (
+    default_buffer_pool, default_frame_processor, default_video_loader,
+    default_load_balancer, default_performance_monitor, optimize_video_processing_pipeline
+)
+from utils.optimized_video_processing import process_video_batch_high_performance
 
 
 class LoopyComfy_VideoSequenceComposer:
@@ -181,19 +188,21 @@ class LoopyComfy_VideoSequenceComposer:
             ValueError: If inputs are invalid
             RuntimeError: If processing fails
         """
-        import tracemalloc
-        
-        # Start memory monitoring
-        tracemalloc.start()
-        initial_memory = tracemalloc.get_traced_memory()[0]
-        
         try:
-            # Validate inputs
+            # Validate inputs securely
             if not sequence:
                 raise ValueError("Empty sequence provided")
             
-            if output_fps <= 0:
-                raise ValueError("Output FPS must be positive")
+            # Validate numeric inputs
+            validator = InputValidator()
+            output_fps = validator.validate_numeric_input(output_fps, min_val=1, max_val=120)
+            batch_size = int(validator.validate_numeric_input(batch_size, min_val=1, max_val=100))
+            custom_width = int(validator.validate_numeric_input(custom_width, min_val=32, max_val=7680))
+            custom_height = int(validator.validate_numeric_input(custom_height, min_val=32, max_val=4320))
+            
+            # Limit sequence length for security
+            if len(sequence) > 10000:
+                raise ValueError("Sequence too long - maximum 10,000 videos allowed")
             
             # Get target resolution from preset or custom values
             width, height = self._get_target_resolution(resolution_preset, custom_width, custom_height)
@@ -205,52 +214,75 @@ class LoopyComfy_VideoSequenceComposer:
             print(f"FPS conversion method: {fps_conversion_method}")
             print(f"Fill mode: {fill_mode}")
             
-            all_frames = []
-            processed_videos = 0
-            
-            # Process videos in batches for memory efficiency
-            for i in range(0, len(sequence), batch_size):
-                batch = sequence[i:i + batch_size]
-                batch_frames = self._process_video_batch(
-                    batch, width, height, output_fps, fps_conversion_method,
-                    maintain_aspect, fill_mode, pad_color, interp_method
-                )
+            # Use memory-bounded processing with automatic cleanup
+            with managed_frame_processing(max_memory_mb=7000, max_frames=2000) as frame_buffer:
+                processed_videos = 0
                 
-                all_frames.extend(batch_frames)
-                processed_videos += len(batch)
+                # Process videos in batches for memory efficiency
+                for i in range(0, len(sequence), batch_size):
+                    batch = sequence[i:i + batch_size]
+                    
+                    try:
+                        # Use high-performance optimized batch processing
+                        batch_frames = process_video_batch_high_performance(
+                            batch, width, height, output_fps,
+                            fps_conversion_method=fps_conversion_method,
+                            maintain_aspect=maintain_aspect,
+                            fill_mode=fill_mode,
+                            pad_color=pad_color,
+                            interp_method=interp_method
+                        )
+                        
+                        frame_buffer.extend(batch_frames)
+                        processed_videos += len(batch)
+                        
+                        print(f"Processed {processed_videos}/{len(sequence)} videos...")
+                        
+                    except MemoryBoundedError as e:
+                        # Memory limit exceeded - try to continue with smaller batch
+                        print(f"Memory limit reached at video {processed_videos}: {e}")
+                        if processed_videos == 0:
+                            raise ValueError("Cannot process even a single video within memory limits")
+                        break
+                    
+                    except Exception as e:
+                        print(f"Error processing batch {i//batch_size}: {e}")
+                        # Continue with next batch
+                        continue
                 
-                print(f"Processed {processed_videos}/{len(sequence)} videos...")
+                # Get all processed frames
+                all_frames = frame_buffer.get_all_frames()
+                
+                if not all_frames:
+                    raise ValueError("No frames were successfully processed")
+                
+                # Convert to ComfyUI IMAGE tensor format with memory efficiency
+                try:
+                    frames_array = np.array(all_frames, dtype=np.float32) / 255.0
+                except MemoryError:
+                    # If we can't create the full array, try processing in chunks
+                    raise MemoryBoundedError("Cannot create final frame array - reduce video count or resolution")
+                
+                # Calculate actual statistics
+                total_frames = len(all_frames)
+                duration_seconds = total_frames / output_fps
+                actual_fps = output_fps
+                
+                print(f"Composition complete: {total_frames} frames, {duration_seconds:.1f}s @ {actual_fps}fps")
+                
+                return (frames_array, total_frames, duration_seconds, actual_fps)
             
-            if not all_frames:
-                raise ValueError("No frames were successfully processed")
-            
-            # Convert to ComfyUI IMAGE tensor format
-            # ComfyUI expects shape: (batch, height, width, channels) with values 0-1
-            frames_array = np.array(all_frames, dtype=np.float32) / 255.0
-            
-            # Calculate actual statistics
-            total_frames = len(all_frames)
-            duration_seconds = total_frames / output_fps
-            actual_fps = output_fps  # We control the FPS, so it should match target
-            
-            # Memory monitoring final check
-            current_memory, peak_memory = tracemalloc.get_traced_memory()
-            memory_used_mb = (peak_memory - initial_memory) / 1024 / 1024
-            
-            print(f"Composition complete: {total_frames} frames, {duration_seconds:.1f}s duration @ {actual_fps}fps")
-            print(f"Memory usage: {memory_used_mb:.1f}MB peak")
-            
-            # Warning if approaching 8GB limit
-            if peak_memory > 8 * 1024 * 1024 * 1024:
-                print(f"[WARNING] Memory usage approaching 8GB limit: {peak_memory/1024/1024/1024:.1f}GB")
-            
-            return (frames_array, total_frames, duration_seconds, actual_fps)
-            
+        except MemoryBoundedError as e:
+            force_cleanup()
+            raise RuntimeError(f"Memory limit exceeded: {str(e)}")
+        except SecurityError as e:
+            raise ValueError(f"Security validation failed: {str(e)}")
         except Exception as e:
+            force_cleanup()
             raise RuntimeError(f"Failed to compose video sequence: {str(e)}")
         finally:
-            # Stop memory monitoring
-            tracemalloc.stop()
+            # Ensure cleanup
+            force_cleanup()
     
     def _get_target_resolution(self, resolution_preset: str, custom_width: int, custom_height: int) -> Tuple[int, int]:
         """

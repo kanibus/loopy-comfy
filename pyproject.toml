@@ -1,0 +1,190 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "loopy-comfy"
+version = "1.2.0"
+description = "ComfyUI nodes for creating non-repetitive video loops using advanced Markov chain mathematics"
+readme = "README.md"
+license = {file = "LICENSE"}
+authors = [
+    {name = "LoopyComfy Team", email = "info@loopycomfy.dev"},
+]
+maintainers = [
+    {name = "LoopyComfy Team", email = "info@loopycomfy.dev"},
+]
+keywords = [
+    "comfyui", 
+    "video-processing", 
+    "markov-chains", 
+    "non-repetitive", 
+    "avatar-generation",
+    "video-loops",
+    "ai-video",
+    "stable-diffusion"
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "Intended Audience :: End Users/Desktop", 
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10", 
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Multimedia :: Video",
+    "Topic :: Multimedia :: Video :: Non-Linear Editor",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Scientific/Engineering :: Mathematics",
+]
+requires-python = ">=3.9"
+dependencies = [
+    "numpy>=1.24.0",
+    "opencv-python>=4.8.0",
+    "ffmpeg-python>=0.2.0",
+    "scipy>=1.10.0",
+    "scikit-learn>=1.3.0",
+    "imageio>=2.31.0",
+    "imageio-ffmpeg>=0.4.8",
+    "pillow>=10.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-cov>=4.1.0", 
+    "pytest-mock>=3.11.0",
+    "black>=23.0.0",
+    "isort>=5.12.0",
+    "flake8>=6.0.0",
+    "mypy>=1.5.0",
+    "bandit>=1.7.5",
+    "safety>=2.3.0",
+]
+ui = [
+    "tkinter; sys_platform != 'darwin'",  # tkinter is built-in on most systems
+]
+comfyui = [
+    # ComfyUI dependencies are usually handled by the ComfyUI installation
+    "torch>=1.13.0",
+    "torchvision>=0.14.0", 
+    "transformers>=4.25.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/your-username/loopy-comfy"
+Repository = "https://github.com/your-username/loopy-comfy.git"
+Documentation = "https://github.com/your-username/loopy-comfy/blob/main/README.md"
+"Bug Tracker" = "https://github.com/your-username/loopy-comfy/issues"
+Changelog = "https://github.com/your-username/loopy-comfy/blob/main/CHANGELOG.md"
+"ComfyUI Integration" = "https://github.com/your-username/loopy-comfy/blob/main/docs/INSTALLATION_TROUBLESHOOTING.md"
+
+[tool.setuptools]
+packages = ["core", "nodes", "utils", "tests", "web", "workflows"]
+
+[tool.setuptools.package-data]
+"*" = ["*.md", "*.txt", "*.yml", "*.yaml", "*.json", "*.js", "*.css", "*.html"]
+
+[tool.black]
+line-length = 127
+target-version = ['py39', 'py310', 'py311', 'py312']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  # directories
+  \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | build
+  | dist
+  | __pycache__
+)/
+'''
+
+[tool.isort]
+profile = "black"
+line_length = 127
+multi_line_output = 3
+include_trailing_comma = true
+force_grid_wrap = 0
+use_parentheses = true
+ensure_newline_before_comments = true
+
+[tool.flake8] 
+max-line-length = 127
+extend-ignore = "E203, E266, E501, W503"
+max-complexity = 10
+exclude = [
+    ".git",
+    "__pycache__",
+    "build",
+    "dist", 
+    ".eggs",
+    "*.egg",
+]
+
+[tool.mypy]
+python_version = "3.9"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = false  # Gradual typing
+ignore_missing_imports = true
+no_implicit_optional = true
+show_error_codes = true
+
+[tool.pytest.ini_options]
+minversion = "7.0"
+addopts = [
+    "-ra",
+    "-q",
+    "--strict-markers",
+    "--strict-config",
+    "--cov=.",
+    "--cov-report=term-missing",
+    "--cov-report=xml",
+]
+testpaths = ["tests"]
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "integration: marks tests as integration tests",
+    "ui: marks tests as UI tests (may require display)",
+    "memory: marks tests that check memory usage",
+    "mathematical: marks tests that validate mathematical correctness",
+]
+filterwarnings = [
+    "ignore::UserWarning",
+    "ignore::DeprecationWarning", 
+]
+
+[tool.coverage.run]
+source = ["core", "nodes", "utils"]
+omit = [
+    "tests/*",
+    "*/test_*",
+    "*/__init__.py",
+    "setup.py",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if self.debug:",
+    "if settings.DEBUG",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if 0:",
+    "if __name__ == .__main__.:",
+    "class .*\bProtocol\):",
+    "@(abc\.)?abstractmethod",
+]
+
+[tool.bandit]
+exclude_dirs = ["tests", "test_*.py"]
+skips = ["B101", "B601"]  # Skip assert_used and shell usage in controlled contexts

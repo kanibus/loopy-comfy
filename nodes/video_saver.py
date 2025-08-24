@@ -14,6 +14,14 @@ import ffmpeg
 from typing import Dict, List, Tuple, Any, Optional
 from pathlib import Path
 
+# Import tkinter for directory browser
+try:
+    import tkinter as tk
+    from tkinter import filedialog
+    TKINTER_AVAILABLE = True
+except ImportError:
+    TKINTER_AVAILABLE = False
+
 # CRITICAL: Standardized import path setup for ComfyUI compatibility
 current_dir = os.path.dirname(os.path.abspath(__file__))
 project_root = os.path.dirname(current_dir)
@@ -77,7 +85,12 @@ class LoopyComfy_VideoSaver:
                 "output_directory": ("STRING", {
                     "default": "./output/",
                     "multiline": False,
-                    "placeholder": "Output directory path"
+                    "placeholder": "Output directory path",
+                    "tooltip": "Directory for output files. Use Browse button for native dialog."
+                }),
+                "browse_output_dir": (["📁 Browse Output Directory"], {
+                    "default": "📁 Browse Output Directory",
+                    "tooltip": "Open native OS folder selection dialog for output directory"
                 }),
                 "fps": ("FLOAT", {
                     "default": 30.0,
@@ -99,11 +112,9 @@ class LoopyComfy_VideoSaver:
                     "label_off": "Single Format Only",
                     "tooltip": "Export in multiple formats simultaneously"
                 }),
-                "export_formats": ("STRING", {
-                    "default": "mp4,mov,webm",
-                    "multiline": False,
-                    "placeholder": "Comma-separated formats (mp4,mov,webm,avi)",
-                    "tooltip": "Additional formats to export (only when multi_format_export is enabled)"
+                "export_formats": (["mp4 (H.264 - Universal)", "mov (H.264 - Apple/Pro)", "webm (VP9 - Web)", "avi (Legacy Compatibility)", "mkv (Matroska Container)"], {
+                    "default": "mp4 (H.264 - Universal)",
+                    "tooltip": "Select output format with codec description"
                 }),
                 "embed_metadata": ("BOOLEAN", {
                     "default": True,
@@ -150,10 +161,11 @@ class LoopyComfy_VideoSaver:
         platform_preset: str,
         output_filename: str,
         output_directory: str,
-        fps: float,
+        browse_output_dir: str = "📁 Browse Output Directory",
+        fps: float = 30.0,
         quality_override: str = "auto",
         multi_format_export: bool = False,
-        export_formats: str = "mp4,mov,webm",
+        export_formats: str = "mp4 (H.264 - Universal)",
         embed_metadata: bool = True,
         metadata_title: str = "",
         metadata_artist: str = "",
@@ -170,10 +182,11 @@ class LoopyComfy_VideoSaver:
             platform_preset: Selected platform preset for optimized encoding
             output_filename: Output filename with template support
             output_directory: Output directory path
+            browse_output_dir: Output directory browser button
             fps: Output frame rate
             quality_override: Override platform quality setting
             multi_format_export: Export multiple formats
-            export_formats: Comma-separated list of formats for multi-export
+            export_formats: Selected format from dropdown with codec description
             embed_metadata: Include metadata in video file
             metadata_*: Metadata fields
             estimate_file_size: Show size estimate before encoding
@@ -187,12 +200,24 @@ class LoopyComfy_VideoSaver:
             RuntimeError: If encoding fails
         """
         try:
+            # CRITICAL: Handle output directory browser button activation
+            if browse_output_dir == "📁 Browse Output Directory" and TKINTER_AVAILABLE:
+                # Trigger directory dialog and update output_directory if selection made
+                dialog_result = self.open_output_directory_dialog(output_directory)
+                if dialog_result and dialog_result.get('success') and dialog_result.get('directory_path'):
+                    output_directory = dialog_result['directory_path']
+                    print(f"Selected output directory via dialog: {output_directory}")
+            
             # Validate inputs
             if frames.size == 0:
                 raise ValueError("No frames provided")
             
             if fps <= 0:
                 raise ValueError("FPS must be positive")
+            
+            # Parse format selection from dropdown
+            selected_format = self._parse_format_selection(export_formats)
+            print(f"Selected format: {selected_format}")
             
             # Ensure output directory exists
             os.makedirs(output_directory, exist_ok=True)
@@ -239,11 +264,11 @@ class LoopyComfy_VideoSaver:
             output_files = [primary_output_path]
             total_size_mb = primary_stats['file_size_mb']
             
-            # Handle multi-format export
-            if multi_format_export and export_formats.strip():
+            # Handle multi-format export using selected format
+            if multi_format_export and selected_format:
                 additional_files, additional_size = self._export_additional_formats(
                     processed_frames, output_directory, processed_filename, fps, 
-                    export_formats, encoding_settings, metadata
+                    selected_format, encoding_settings, metadata
                 )
                 output_files.extend(additional_files)
                 total_size_mb += additional_size
@@ -287,10 +312,6 @@ class LoopyComfy_VideoSaver:
         
         return frames
     
-    # REMOVED: Conflicting _encode_video_ffmpeg method
-    # This method was replaced by _encode_video_ffmpeg_enhanced which provides
-    # better platform-specific encoding and metadata support
-    
     def _check_codec_available(self, codec: str) -> bool:
         """
         Check if codec is available in the system.
@@ -302,14 +323,14 @@ class LoopyComfy_VideoSaver:
             True if available, False otherwise
         """
         try:
-            # Use a valid test pattern for codec validation
-            # Generate 1 frame of test video data using color pattern
+            # Optimized codec validation using FFmpeg encoder query
+            # Much faster than creating test video data
             result = ffmpeg.run(
-                ffmpeg.input('color=c=black:size=320x240:duration=0.1', f='lavfi')
-                .output('pipe:', format='null', vcodec=codec, loglevel='quiet'),
+                ffmpeg.input('color=c=black:size=1x1:duration=0.01', f='lavfi')
+                .output('pipe:', format='null', vcodec=codec, loglevel='error'),
                 capture_stdout=True,
                 capture_stderr=True,
-                timeout=30  # 30 seconds timeout for codec validation
+                timeout=10  # Reduced timeout for faster validation
             )
             return True
         except ffmpeg.Error as e:
@@ -832,6 +853,131 @@ class LoopyComfy_VideoSaver:
             return 'libx264'
         
         return codec
+    
+    def open_output_directory_dialog(self, current_path: str = None) -> Optional[Dict[str, str]]:
+        """
+        Open native OS directory selection dialog for output directory.
+        
+        Args:
+            current_path: Current output directory path to use as initial directory
+        
+        Returns:
+            Dictionary with selected directory path and additional info
+        """
+        if not TKINTER_AVAILABLE:
+            print("Warning: Directory dialog not available (tkinter not installed)")
+            return {
+                "success": False, 
+                "error": "Tkinter not available",
+                "fallback_suggestions": [
+                    "./output/",
+                    "./renders/", 
+                    "./ComfyUI/output/",
+                    "C:\\Users\\%USERNAME%\\Documents\\LoopyComfy",
+                    "/home/%USER%/Documents/LoopyComfy"
+                ]
+            }
+        
+        try:
+            root = tk.Tk()
+            root.withdraw()  # Hide the main window
+            root.attributes('-topmost', True)  # Bring dialog to front
+            root.lift()  # Additional lift for focus
+            
+            # Use current path or reasonable default as initial directory
+            initial_dir = current_path if current_path and os.path.exists(current_path) else os.getcwd()
+            
+            directory_path = filedialog.askdirectory(
+                title="Select Output Directory - LoopyComfy",
+                initialdir=initial_dir,
+                mustexist=False  # Allow creating new directories
+            )
+            
+            root.destroy()
+            
+            if directory_path:
+                # Ensure directory exists
+                try:
+                    os.makedirs(directory_path, exist_ok=True)
+                    
+                    return {
+                        "success": True,
+                        "directory_path": directory_path,
+                        "path": directory_path,  # For compatibility
+                        "folder_name": os.path.basename(directory_path),
+                        "is_writable": os.access(directory_path, os.W_OK)
+                    }
+                except Exception as create_error:
+                    print(f"Warning: Could not create selected directory: {create_error}")
+                    return {
+                        "success": True,
+                        "directory_path": directory_path,
+                        "path": directory_path,
+                        "folder_name": os.path.basename(directory_path),
+                        "is_writable": False,
+                        "error": str(create_error)
+                    }
+            
+            return {"success": False, "cancelled": True}
+            
+        except Exception as e:
+            print(f"Error opening directory dialog: {str(e)}")
+            return {
+                "success": False, 
+                "error": str(e),
+                "fallback_suggestions": [
+                    "./output/",
+                    "./renders/",
+                    "./ComfyUI/output/"
+                ]
+            }
+    
+    def _parse_format_selection(self, format_selection: str) -> str:
+        """
+        Parse format selection from dropdown to extract actual format.
+        
+        Args:
+            format_selection: Selection from format dropdown (e.g., "mp4 (H.264 - Universal)")
+        
+        Returns:
+            Actual format string (e.g., "mp4")
+        """
+        # Map from dropdown selections to actual formats
+        format_mapping = {
+            "mp4 (H.264 - Universal)": "mp4",
+            "mov (H.264 - Apple/Pro)": "mov", 
+            "webm (VP9 - Web)": "webm",
+            "avi (Legacy Compatibility)": "avi",
+            "mkv (Matroska Container)": "mkv"
+        }
+        
+        # Extract format from selection
+        if format_selection in format_mapping:
+            return format_mapping[format_selection]
+        
+        # Fallback: try to extract format from string
+        import re
+        match = re.match(r'^(\w+)\s*\(', format_selection)
+        if match:
+            return match.group(1).lower()
+        
+        # Final fallback
+        return "mp4"
+    
+    def _get_ffmpeg_compatible_formats(self) -> List[str]:
+        """
+        Get list of FFmpeg-compatible formats that are tested and reliable.
+        
+        Returns:
+            List of format descriptions with codec information
+        """
+        return [
+            "mp4 (H.264 - Universal compatibility, recommended for most uses)",
+            "mov (H.264 - Apple/Pro workflows, high quality)",
+            "webm (VP9 - Web optimized, modern browsers)",
+            "avi (H.264 - Legacy compatibility, widely supported)",
+            "mkv (H.264 - Matroska container, flexible format)"
+        ]
 
 
 # Required for ComfyUI node registration

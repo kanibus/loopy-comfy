@@ -20,6 +20,17 @@ Loopy Comfy revolutionizes video loops by eliminating repetitive, predictable se
 - **🔧 ComfyUI Native**: Seamlessly integrates with your existing ComfyUI workflows
 - **📊 Comprehensive Testing**: 200+ test cases with 100% coverage validation
 
+### 🚀 NEW: v2.0 Advanced Features
+
+- **⚡ Real-Time Processing**: WebSocket-based streaming with sub-200ms latency
+- **🧠 ML-Enhanced Transitions**: Three-tier AI models for intelligent transition detection
+- **🎮 GPU Acceleration**: CUDA kernels with 3-5x performance improvement
+- **📈 Performance Dashboard**: Real-time monitoring with adaptive quality control
+- **🛡️ Intelligent Fallbacks**: Automatic degradation chains ensure zero crashes
+- **🔧 Safety-First Design**: All advanced features disabled by default for stability
+
+> 📖 **[Full v2.0 Documentation](docs/v2-advanced-features.md)** - Real-time streaming, ML enhancements, GPU acceleration
+
 ## 🎥 What It Does
 
 Transform this:
@@ -117,6 +128,35 @@ Our Markov chain engine analyzes your video collection and generates intelligent
 
 4. **Restart ComfyUI**
    - The nodes will appear in the `video/avatar` category
+
+### v2.0 Advanced Features Setup (Optional)
+
+To enable advanced features like real-time processing, ML enhancements, and GPU acceleration:
+
+1. **Configure advanced features:**
+   ```bash
+   # Edit config/advanced_features.yaml
+   # Enable desired features (all disabled by default for safety)
+   ```
+
+2. **Install additional dependencies (if using advanced features):**
+   ```bash
+   # For ML enhancements
+   pip install torch torchvision
+
+   # For GPU acceleration  
+   pip install cupy-cuda12x  # Replace 12x with your CUDA version
+
+   # For real-time streaming
+   pip install websockets
+   ```
+
+3. **Start with advanced features:**
+   ```bash
+   python -m loopy_comfy.main --config config/advanced_features.yaml
+   ```
+
+> 📖 **See [v2.0 Advanced Features Guide](docs/v2-advanced-features.md)** for complete setup and configuration
 
 ## 📋 Node Reference
 

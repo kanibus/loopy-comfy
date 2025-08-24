@@ -114,6 +114,12 @@ class FolderBrowserWidget {
                     
                     // Store in recent folders
                     this.addToRecent(data.path);
+                    
+                    // Show success message with video count if available
+                    if (data.video_count !== undefined) {
+                        console.log(`LoopyComfy: Selected folder with ${data.video_count} videos`);
+                        this.showTempMessage(`Selected: ${data.video_count} videos found`);
+                    }
                     return;
                 } else if (data.fallback_suggestions) {
                     // Show fallback suggestions
@@ -131,6 +137,32 @@ class FolderBrowserWidget {
             // Graceful fallback to manual input
             this.promptManualInput();
         }
+    }
+    
+    showTempMessage(message) {
+        // Create temporary success indicator
+        const indicator = document.createElement("div");
+        indicator.textContent = message;
+        indicator.style.cssText = `
+            position: absolute;
+            background: #4a9eff;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 3px;
+            font-size: 11px;
+            z-index: 1000;
+            animation: fadeInOut 3s ease;
+        `;
+        
+        // Position near the widget
+        this.element.appendChild(indicator);
+        
+        // Remove after animation
+        setTimeout(() => {
+            if (indicator.parentNode) {
+                indicator.parentNode.removeChild(indicator);
+            }
+        }, 3000);
     }
     
     promptManualInput() {
@@ -407,6 +439,217 @@ class ProgressWidget {
     }
 }
 
+// Output Directory Browser Widget for VideoSaver
+class OutputDirectoryBrowserWidget {
+    constructor(node, inputName, inputData) {
+        this.node = node;
+        this.inputName = inputName;
+        this.value = inputData[1]?.default || "./output/";
+        
+        // Create main container
+        this.element = document.createElement("div");
+        this.element.className = "output-directory-browser-widget";
+        this.element.style.cssText = `
+            display: flex;
+            gap: 5px;
+            align-items: center;
+            margin: 2px 0;
+            width: 100%;
+        `;
+        
+        // Create path input
+        this.pathInput = document.createElement("input");
+        this.pathInput.type = "text";
+        this.pathInput.value = this.value;
+        this.pathInput.placeholder = "Output directory path";
+        this.pathInput.style.cssText = `
+            flex: 1;
+            padding: 4px 8px;
+            border: 1px solid #555;
+            background: #333;
+            color: #fff;
+            border-radius: 3px;
+            font-family: monospace;
+            font-size: 12px;
+        `;
+        
+        // Create browse button
+        this.browseButton = document.createElement("button");
+        this.browseButton.textContent = "📁 Browse";
+        this.browseButton.title = "Open output directory selection dialog";
+        this.browseButton.style.cssText = `
+            padding: 4px 12px;
+            border: 1px solid #666;
+            background: #4a4a4a;
+            color: #fff;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 11px;
+            white-space: nowrap;
+        `;
+        
+        // Create create directory button
+        this.createButton = document.createElement("button");
+        this.createButton.textContent = "+";
+        this.createButton.title = "Create new output directory";
+        this.createButton.style.cssText = `
+            padding: 4px 8px;
+            border: 1px solid #666;
+            background: #4a4a4a;
+            color: #fff;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 11px;
+        `;
+        
+        // Assemble widget
+        this.element.appendChild(this.pathInput);
+        this.element.appendChild(this.browseButton);
+        this.element.appendChild(this.createButton);
+        
+        // Event handlers
+        this.pathInput.addEventListener('input', (e) => {
+            this.value = e.target.value;
+            this.node.setDirtyCanvas(true, true);
+        });
+        
+        this.browseButton.addEventListener('click', () => {
+            this.openDirectoryDialog();
+        });
+        
+        this.createButton.addEventListener('click', () => {
+            this.createNewDirectory();
+        });
+    }
+    
+    async openDirectoryDialog() {
+        try {
+            // Try API endpoint for output directory selection
+            const response = await api.fetchApi("/loopycomfy/browse_output_dir", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    current_path: this.value
+                })
+            });
+            
+            if (response.ok) {
+                const data = await response.json();
+                if (data.success && data.path) {
+                    this.value = data.path;
+                    this.pathInput.value = data.path;
+                    this.node.setDirtyCanvas(true, true);
+                    
+                    // Show success message with writability status
+                    if (data.is_writable !== undefined) {
+                        const status = data.is_writable ? "writable" : "read-only";
+                        console.log(`LoopyComfy: Selected output directory (${status})`);
+                        this.showTempMessage(`Selected: ${data.folder_name} (${status})`);
+                    }
+                    return;
+                } else if (data.fallback_suggestions) {
+                    // Show fallback suggestions
+                    this.showFallbackSuggestions(data.fallback_suggestions);
+                    return;
+                }
+            }
+            
+            // Fallback to manual input if API fails
+            console.warn("Output directory dialog API not available, using manual input");
+            this.promptManualInput();
+            
+        } catch (error) {
+            console.warn("Output directory dialog API error:", error);
+            this.promptManualInput();
+        }
+    }
+    
+    createNewDirectory() {
+        const dirName = prompt("Enter name for new output directory:", "LoopyComfy_Output");
+        if (dirName && dirName.trim()) {
+            // Create path relative to current directory or use absolute
+            const newPath = this.value.includes("/") || this.value.includes("\\") 
+                ? `${this.value.replace(/[\/\\]+$/, "")}/${dirName.trim()}`
+                : `./${dirName.trim()}`;
+            
+            this.value = newPath;
+            this.pathInput.value = newPath;
+            this.node.setDirtyCanvas(true, true);
+            
+            this.showTempMessage(`Created: ${dirName.trim()}`);
+        }
+    }
+    
+    showTempMessage(message) {
+        // Create temporary success indicator
+        const indicator = document.createElement("div");
+        indicator.textContent = message;
+        indicator.style.cssText = `
+            position: absolute;
+            background: #4a9eff;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 3px;
+            font-size: 11px;
+            z-index: 1000;
+            animation: fadeInOut 3s ease;
+        `;
+        
+        // Position near the widget
+        this.element.appendChild(indicator);
+        
+        // Remove after animation
+        setTimeout(() => {
+            if (indicator.parentNode) {
+                indicator.parentNode.removeChild(indicator);
+            }
+        }, 3000);
+    }
+    
+    promptManualInput() {
+        const newPath = prompt("Enter output directory path:\n(API directory browser not available)", this.value);
+        if (newPath !== null && newPath.trim() !== "") {
+            this.value = newPath;
+            this.pathInput.value = newPath;
+            this.node.setDirtyCanvas(true, true);
+        }
+    }
+    
+    showFallbackSuggestions(suggestions) {
+        const suggestionText = "Directory browser not available. Try these common paths:\n" +
+            suggestions.map((path, i) => `${i+1}. ${path}`).join('\n') +
+            "\nEnter number (1-" + suggestions.length + ") or type custom path:";
+        
+        const selection = prompt(suggestionText);
+        
+        if (selection !== null) {
+            const index = parseInt(selection) - 1;
+            if (!isNaN(index) && index >= 0 && index < suggestions.length) {
+                // User selected a suggestion
+                this.value = suggestions[index];
+                this.pathInput.value = suggestions[index];
+            } else {
+                // User typed custom path
+                this.value = selection;
+                this.pathInput.value = selection;
+            }
+            
+            this.node.setDirtyCanvas(true, true);
+        }
+    }
+    
+    getValue() {
+        return this.value;
+    }
+    
+    setValue(value) {
+        this.value = value;
+        this.pathInput.value = value;
+    }
+}
+
 // Register UI extensions
 app.registerExtension({
     name: "LoopyComfy.NonLinearAvatarUI",
@@ -445,6 +688,33 @@ app.registerExtension({
                                 
                                 return result;
                             };
+                        }
+                    }
+                }
+                
+                return result;
+            };
+        }
+        
+        // Enhanced VideoSaver with output directory browser
+        if (nodeData.name === "LoopyComfy_VideoSaver") {
+            const onNodeCreated = nodeType.prototype.onNodeCreated;
+            nodeType.prototype.onNodeCreated = function() {
+                const result = onNodeCreated?.apply(this, arguments);
+                
+                // Add output directory browser widget
+                if (this.widgets) {
+                    const outputDirWidget = this.widgets.find(w => w.name === "output_directory");
+                    if (outputDirWidget) {
+                        // Replace with custom output directory browser widget
+                        const directoryBrowser = new OutputDirectoryBrowserWidget(this, "output_directory", outputDirWidget.options);
+                        
+                        // Hide original widget and add custom one
+                        outputDirWidget.computeSize = () => [0, -4]; // Hide original
+                        
+                        // Add custom widget element to node
+                        if (!this.outputDirectoryBrowserWidget) {
+                            this.outputDirectoryBrowserWidget = directoryBrowser;
                         }
                     }
                 }
@@ -506,6 +776,30 @@ app.registerExtension({
                 }
             }
             
+            @keyframes fadeInOut {
+                0% {
+                    opacity: 0;
+                    transform: translateY(-5px);
+                }
+                20% {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+                80% {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+                100% {
+                    opacity: 0;
+                    transform: translateY(5px);
+                }
+            }
+            
+            .output-directory-browser-widget button:hover {
+                background: #5a5a5a !important;
+                border-color: #777 !important;
+            }
+            
             /* Tooltip enhancements */
             .comfy-tooltip {
                 max-width: 300px;
@@ -537,4 +831,4 @@ api.addEventListener("status", (event) => {
     });
 });
 
-export { FolderBrowserWidget, ResolutionPresetWidget, ProgressWidget };
+export { FolderBrowserWidget, OutputDirectoryBrowserWidget, ResolutionPresetWidget, ProgressWidget };

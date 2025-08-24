@@ -27,6 +27,9 @@ project_root = os.path.dirname(current_dir)
 if project_root not in sys.path:
     sys.path.insert(0, project_root)
 
+# Import security utilities
+from utils.security_utils import PathValidator, SecurityError, default_resource_limiter
+
 
 class LoopyComfy_VideoAssetLoader:
     """
@@ -45,7 +48,12 @@ class LoopyComfy_VideoAssetLoader:
                     "default": "./assets/videos/",
                     "multiline": False,
                     "placeholder": "Path to video directory",
-                    "dynamicPrompts": False
+                    "dynamicPrompts": False,
+                    "tooltip": "Video directory path. Use the Browse button for native OS dialog."
+                }),
+                "browse_folder": (["📁 Browse Folder"], {
+                    "default": "📁 Browse Folder",
+                    "tooltip": "Open native OS folder selection dialog"
                 }),
                 "file_pattern": ("STRING", {
                     "default": "*.mp4",
@@ -85,6 +93,12 @@ class LoopyComfy_VideoAssetLoader:
                 "preview_mode": (["thumbnails", "list", "details"], {
                     "default": "list",
                     "tooltip": "Display mode for loaded video information"
+                }),
+                "show_preview": ("BOOLEAN", {
+                    "default": False,
+                    "label_on": "Show Video Preview",
+                    "label_off": "No Preview",
+                    "tooltip": "Generate 360p preview (max 150 frames, memory safe)"
                 })
             },
             "hidden": {
@@ -93,43 +107,62 @@ class LoopyComfy_VideoAssetLoader:
             }
         }
     
-    RETURN_TYPES = ("VIDEO_METADATA_LIST", "INT", "FLOAT", "IMAGE")
-    RETURN_NAMES = ("video_metadata", "video_count", "total_duration", "preview_grid")
+    RETURN_TYPES = ("VIDEO_METADATA_LIST", "INT", "FLOAT", "IMAGE", "STRING")
+    RETURN_NAMES = ("video_metadata", "video_count", "total_duration", "preview_grid", "folder_info")
     FUNCTION = "load_video_assets"
     CATEGORY = "video/avatar"
     
     def load_video_assets(
         self, 
         directory_path: str, 
-        file_pattern: str, 
-        max_videos: int,
-        validate_seamless: bool,
+        browse_folder: str = "📁 Browse Folder",
+        file_pattern: str = "*.mp4", 
+        max_videos: int = 100,
+        validate_seamless: bool = True,
         scan_subfolders: bool = False,
         sort_by: str = "name",
         filter_resolution: str = "all",
         preview_mode: str = "list",
+        show_preview: bool = False,
         **kwargs
-    ) -> Tuple[List[Dict[str, Any]], int, float, Optional[np.ndarray]]:
+    ) -> Tuple[List[Dict[str, Any]], int, float, Optional[np.ndarray], str]:
         """
         Load and validate video assets from directory.
         
         Args:
             directory_path: Path to directory containing video files
+            browse_folder: Folder browser button (triggers dialog when activated)
             file_pattern: Glob pattern for filtering files
             max_videos: Maximum number of videos to load
             validate_seamless: Whether to validate seamless loop points
+            show_preview: Whether to generate memory-safe preview
             
         Returns:
-            Tuple containing list of video metadata dictionaries
+            Tuple containing (video_metadata, count, duration, preview, folder_info)
             
         Raises:
             FileNotFoundError: If directory doesn't exist
             ValueError: If no valid videos found
         """
         try:
+            # CRITICAL: Handle folder browser button activation
+            if browse_folder == "📁 Browse Folder" and TKINTER_AVAILABLE:
+                # Trigger folder dialog and update directory_path if selection made
+                dialog_result = self.open_folder_dialog(directory_path)
+                if dialog_result and dialog_result.get('success') and dialog_result.get('directory_path'):
+                    directory_path = dialog_result['directory_path']
+                    print(f"Selected folder via dialog: {directory_path}")
             # Validate directory path with security checks
             directory_path = self._validate_directory_path(directory_path)
             file_pattern = self._validate_file_pattern(file_pattern)
+            
+            # Check resource limits to prevent DoS attacks
+            if not default_resource_limiter.check_memory_usage():
+                raise ValueError("Memory limit exceeded - reduce batch size or free memory")
+            
+            if max_videos > 1000:  # Prevent excessive resource usage
+                max_videos = 1000
+                print("WARNING: max_videos limited to 1000 for security reasons")
             
             if not os.path.exists(directory_path):
                 raise FileNotFoundError(f"Directory not found: {directory_path}")
@@ -177,16 +210,26 @@ class LoopyComfy_VideoAssetLoader:
             video_count = len(video_metadata)
             total_duration = sum(metadata['duration'] for metadata in video_metadata)
             
-            # Generate preview grid based on mode
-            preview_grid = self._generate_preview_grid(video_metadata, preview_mode)
+            # Generate preview grid based on mode and settings
+            preview_grid = None
+            if show_preview:
+                preview_grid = self._generate_memory_safe_preview(video_metadata, preview_mode)
+            else:
+                preview_grid = self._generate_preview_grid(video_metadata, preview_mode)
+            
+            # Create folder information string
+            folder_info = f"Loaded {video_count} videos from {directory_path} (Total: {total_duration:.1f}s)"
             
             print(f"Successfully loaded {video_count} video assets")
             print(f"Total duration: {total_duration:.1f}s ({total_duration/60:.1f} minutes)")
             
-            return (video_metadata, video_count, total_duration, preview_grid)
+            return (video_metadata, video_count, total_duration, preview_grid, folder_info)
             
         except Exception as e:
-            raise RuntimeError(f"Failed to load video assets: {str(e)}")
+            # Return safe defaults on error to maintain compatibility
+            error_msg = f"Error loading assets: {str(e)}"
+            print(f"ERROR: {error_msg}")
+            return ([], 0, 0.0, None, error_msg)
     
     def _extract_video_metadata(
         self, 
@@ -508,106 +551,235 @@ class LoopyComfy_VideoAssetLoader:
         # Could create charts showing resolution distribution, duration statistics, etc.
         return None
     
-    def open_folder_dialog(self) -> Optional[Dict[str, str]]:
+    def open_folder_dialog(self, current_path: str = None) -> Optional[Dict[str, str]]:
         """
         Open native OS folder selection dialog.
         
+        Args:
+            current_path: Current directory path to use as initial directory
+        
         Returns:
-            Dictionary with selected folder path or None
+            Dictionary with selected folder path, video count, and additional info
         """
         if not TKINTER_AVAILABLE:
             print("Warning: Folder dialog not available (tkinter not installed)")
-            return None
+            return {
+                "success": False, 
+                "error": "Tkinter not available",
+                "fallback_suggestions": [
+                    "./assets/videos/",
+                    "./input/", 
+                    "./ComfyUI/input/",
+                    "C:\\Users\\%USERNAME%\\Videos",
+                    "/home/%USER%/Videos"
+                ]
+            }
         
         try:
             root = tk.Tk()
             root.withdraw()  # Hide the main window
             root.attributes('-topmost', True)  # Bring dialog to front
+            root.lift()  # Additional lift for focus
+            
+            # Use current path or reasonable default as initial directory
+            initial_dir = current_path if current_path and os.path.exists(current_path) else os.getcwd()
             
             folder_path = filedialog.askdirectory(
-                title="Select Video Folder",
-                initialdir=os.getcwd()
+                title="Select Video Folder - LoopyComfy",
+                initialdir=initial_dir,
+                mustexist=True
             )
             
             root.destroy()
             
-            if folder_path:
-                return {"directory_path": folder_path}
-            return None
+            if folder_path and os.path.exists(folder_path):
+                # Quick scan to count videos in selected folder
+                try:
+                    video_extensions = {'.mp4', '.mov', '.avi', '.webm', '.mkv', '.flv', '.wmv'}
+                    video_files = [f for f in os.listdir(folder_path) 
+                                 if os.path.splitext(f)[1].lower() in video_extensions]
+                    video_count = len(video_files)
+                    
+                    return {
+                        "success": True,
+                        "directory_path": folder_path,
+                        "path": folder_path,  # For compatibility
+                        "video_count": video_count,
+                        "folder_name": os.path.basename(folder_path)
+                    }
+                except Exception as scan_error:
+                    print(f"Warning: Could not scan selected folder: {scan_error}")
+                    return {
+                        "success": True,
+                        "directory_path": folder_path,
+                        "path": folder_path,
+                        "video_count": "unknown",
+                        "folder_name": os.path.basename(folder_path)
+                    }
+            
+            return {"success": False, "cancelled": True}
             
         except Exception as e:
             print(f"Error opening folder dialog: {str(e)}")
+            return {
+                "success": False, 
+                "error": str(e),
+                "fallback_suggestions": [
+                    "./assets/videos/",
+                    "./input/",
+                    "./ComfyUI/input/"
+                ]
+            }
+    
+    def _generate_memory_safe_preview(self, video_metadata: List[Dict[str, Any]], preview_mode: str) -> Optional[np.ndarray]:
+        """
+        Generate memory-safe preview with strict constraints.
+        
+        CRITICAL: Must not exceed 1GB additional memory usage
+        - Maximum 150 frames (5 seconds at 30fps)
+        - 360p resolution (640x360) for memory efficiency 
+        - Maximum 10 videos for preview
+        
+        Args:
+            video_metadata: List of video metadata dictionaries
+            preview_mode: Preview display mode
+            
+        Returns:
+            Memory-safe preview image array or None
+        """
+        if not video_metadata or preview_mode == "list":
+            return None
+            
+        try:
+            # STEP 1: Memory safety constraints
+            MAX_PREVIEW_VIDEOS = min(10, len(video_metadata))
+            MAX_FRAMES = 150  # 5 seconds at 30fps
+            PREVIEW_WIDTH = 640
+            PREVIEW_HEIGHT = 360
+            
+            # Estimate memory usage: frames * width * height * channels * bytes
+            estimated_memory_mb = (MAX_FRAMES * PREVIEW_WIDTH * PREVIEW_HEIGHT * 3 * MAX_PREVIEW_VIDEOS) / (1024 * 1024)
+            
+            if estimated_memory_mb > 1000:  # 1GB limit
+                print(f"Warning: Preview would use {estimated_memory_mb:.1f}MB, skipping for memory safety")
+                return None
+            
+            print(f"Generating memory-safe preview: {MAX_PREVIEW_VIDEOS} videos, max {MAX_FRAMES} frames each")
+            print(f"Estimated memory usage: {estimated_memory_mb:.1f}MB")
+            
+            # STEP 2: Load and resize frames from sample videos
+            preview_frames = []
+            videos_processed = 0
+            
+            for metadata in video_metadata[:MAX_PREVIEW_VIDEOS]:
+                if videos_processed >= MAX_PREVIEW_VIDEOS:
+                    break
+                    
+                try:
+                    cap = cv2.VideoCapture(metadata['file_path'])
+                    if not cap.isOpened():
+                        continue
+                    
+                    # Sample frames evenly throughout video
+                    total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+                    frame_step = max(1, total_frames // min(MAX_FRAMES // MAX_PREVIEW_VIDEOS, total_frames))
+                    
+                    video_frames = []
+                    frame_count = 0
+                    current_frame = 0
+                    
+                    while frame_count < (MAX_FRAMES // MAX_PREVIEW_VIDEOS) and current_frame < total_frames:
+                        cap.set(cv2.CAP_PROP_POS_FRAMES, current_frame)
+                        ret, frame = cap.read()
+                        
+                        if ret:
+                            # Resize to 360p for memory efficiency
+                            frame_resized = cv2.resize(frame, (PREVIEW_WIDTH, PREVIEW_HEIGHT))
+                            # Convert BGR to RGB
+                            frame_rgb = cv2.cvtColor(frame_resized, cv2.COLOR_BGR2RGB)
+                            video_frames.append(frame_rgb)
+                            frame_count += 1
+                        
+                        current_frame += frame_step
+                    
+                    cap.release()
+                    
+                    if video_frames:
+                        preview_frames.extend(video_frames)
+                        videos_processed += 1
+                    
+                    # Memory check during processing
+                    current_memory_mb = len(preview_frames) * PREVIEW_WIDTH * PREVIEW_HEIGHT * 3 / (1024 * 1024)
+                    if current_memory_mb > 1000:
+                        print(f"Memory limit reached at {current_memory_mb:.1f}MB, stopping preview generation")
+                        break
+                        
+                except Exception as e:
+                    print(f"Warning: Failed to process {metadata.get('filename', 'unknown')} for preview: {str(e)}")
+                    continue
+            
+            if not preview_frames:
+                print("No frames could be loaded for preview")
+                return None
+            
+            # STEP 3: Create final preview array
+            # Convert to numpy array and normalize
+            preview_array = np.array(preview_frames, dtype=np.float32) / 255.0
+            
+            # Add batch dimension for ComfyUI compatibility
+            if len(preview_array.shape) == 4:  # (frames, height, width, channels)
+                preview_array = np.expand_dims(preview_array, axis=0)  # (1, frames, height, width, channels)
+                
+            final_memory_mb = preview_array.nbytes / (1024 * 1024)
+            print(f"Preview generated: {len(preview_frames)} frames, {final_memory_mb:.1f}MB memory used")
+            
+            return preview_array
+            
+        except Exception as e:
+            print(f"Error generating memory-safe preview: {str(e)}")
             return None
     
     def _validate_directory_path(self, directory_path: str) -> str:
         """
-        Validate and sanitize directory path to prevent path traversal attacks.
+        Secure validation and sanitization of directory paths.
         
         Args:
             directory_path: Input directory path
             
         Returns:
-            Sanitized absolute path
+            Validated absolute path
             
         Raises:
-            ValueError: If path contains malicious patterns
+            ValueError: If path contains malicious patterns or is not allowed
         """
-        # Convert to absolute path
-        abs_path = os.path.abspath(directory_path)
-        
-        # Check for path traversal patterns
-        dangerous_patterns = ['..', '~', '$']
-        normalized_path = os.path.normpath(directory_path.lower())
-        
-        for pattern in dangerous_patterns:
-            if pattern in normalized_path:
-                raise ValueError(f"Potentially unsafe path detected: {directory_path}")
-        
-        # Ensure path doesn't escape from reasonable bounds
-        # Allow only paths that are subdirectories of current working directory or absolute paths
-        cwd = os.path.abspath(os.getcwd())
-        
-        # If it's not under current directory and not an explicit absolute path, reject it
-        if not (abs_path.startswith(cwd) or os.path.isabs(directory_path)):
-            raise ValueError(f"Path not allowed: {directory_path}")
-        
-        # Additional safety: check for Windows drive letter issues (Windows specific)
-        if os.name == 'nt':  # Windows
-            if len(abs_path) > 260:  # Windows MAX_PATH limitation
-                raise ValueError(f"Path too long (>{260} chars): {directory_path}")
-        
-        return abs_path
+        try:
+            path_validator = PathValidator()
+            return path_validator.validate_directory_path(directory_path)
+        except SecurityError as e:
+            raise ValueError(f"Security validation failed: {str(e)}")
+        except Exception as e:
+            raise ValueError(f"Path validation error: {str(e)}")
     
     def _validate_file_pattern(self, file_pattern: str) -> str:
         """
-        Validate and sanitize file pattern to prevent shell injection.
+        Secure validation and sanitization of file patterns.
         
         Args:
             file_pattern: Input file pattern
             
         Returns:
-            Sanitized file pattern
+            Validated file pattern
             
         Raises:
-            ValueError: If pattern contains dangerous characters
+            ValueError: If pattern contains dangerous characters or patterns
         """
-        # Remove potentially dangerous characters
-        dangerous_chars = [';', '|', '&', '>', '<', '`', '$', '(', ')']
-        
-        for char in dangerous_chars:
-            if char in file_pattern:
-                raise ValueError(f"Dangerous character '{char}' not allowed in file pattern: {file_pattern}")
-        
-        # Ensure pattern looks like a valid glob pattern
-        if not any(c in file_pattern for c in ['*', '?', '[', ']']):
-            if not file_pattern.startswith('*.'):
-                # If it's not a glob pattern, make it one
-                if '.' in file_pattern:
-                    file_pattern = '*' + file_pattern
-                else:
-                    file_pattern = file_pattern + '*'
-        
-        return file_pattern
+        try:
+            path_validator = PathValidator()
+            return path_validator.validate_file_pattern(file_pattern)
+        except SecurityError as e:
+            raise ValueError(f"File pattern security validation failed: {str(e)}")
+        except Exception as e:
+            raise ValueError(f"File pattern validation error: {str(e)}")
 
 
 # Required for ComfyUI node registration

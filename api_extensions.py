@@ -81,13 +81,15 @@ class LoopyComfyAPI:
             except ImportError:
                 # Fallback when tkinter not available
                 return {
+                    "success": False,
                     "error": "Native folder dialog not available",
                     "path": None,
                     "fallback_suggestions": [
                         "./assets/videos/",
                         "./input/",
-                        os.path.expanduser("~/Videos/"),
-                        os.path.expanduser("~/Downloads/")
+                        "./ComfyUI/input/",
+                        os.path.expanduser("~/Videos/") if os.path.exists(os.path.expanduser("~/Videos/")) else "./videos/",
+                        os.path.expanduser("~/Downloads/") if os.path.exists(os.path.expanduser("~/Downloads/")) else "./downloads/"
                     ]
                 }
                 
@@ -169,6 +171,97 @@ class LoopyComfyAPI:
                 
         except Exception as e:
             return {"error": f"Failed to get video info: {str(e)}"}
+    
+    def browse_output_directory(self, request_data: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Handle output directory browsing requests from UI.
+        
+        Args:
+            request_data: Request data with current output directory
+            
+        Returns:
+            Response data with selected directory or error
+        """
+        try:
+            current_path = request_data.get('current_path', './output/')
+            
+            # Security validation
+            if not self._is_path_allowed(current_path):
+                return {
+                    "error": "Path not allowed for security reasons",
+                    "path": None
+                }
+            
+            # Try to use tkinter for directory selection
+            try:
+                import tkinter as tk
+                from tkinter import filedialog
+                
+                # Create hidden root window
+                root = tk.Tk()
+                root.withdraw()
+                root.attributes('-topmost', True)
+                
+                selected_path = filedialog.askdirectory(
+                    title="Select Output Directory - LoopyComfy",
+                    initialdir=current_path if os.path.exists(current_path) else os.getcwd(),
+                    mustexist=False  # Allow creating new directories
+                )
+                
+                root.destroy()
+                
+                if selected_path:
+                    # Ensure directory exists and is writable
+                    try:
+                        os.makedirs(selected_path, exist_ok=True)
+                        is_writable = os.access(selected_path, os.W_OK)
+                        
+                        return {
+                            "success": True,
+                            "path": selected_path,
+                            "directory_path": selected_path,  # For compatibility
+                            "folder_name": os.path.basename(selected_path),
+                            "is_writable": is_writable,
+                            "message": f"Selected output directory: {os.path.basename(selected_path)}"
+                        }
+                    except Exception as create_error:
+                        return {
+                            "success": True,
+                            "path": selected_path,
+                            "directory_path": selected_path,
+                            "folder_name": os.path.basename(selected_path),
+                            "is_writable": False,
+                            "warning": f"Could not create/access directory: {str(create_error)}",
+                            "message": f"Selected directory (may need manual creation): {os.path.basename(selected_path)}"
+                        }
+                else:
+                    return {
+                        "success": False,
+                        "path": None,
+                        "message": "No directory selected"
+                    }
+                    
+            except ImportError:
+                # Fallback when tkinter not available
+                return {
+                    "success": False,
+                    "error": "Native directory dialog not available",
+                    "path": None,
+                    "fallback_suggestions": [
+                        "./output/",
+                        "./renders/",
+                        "./ComfyUI/output/",
+                        os.path.expanduser("~/Documents/LoopyComfy/") if os.path.exists(os.path.expanduser("~/Documents/")) else "./generated/",
+                        os.path.expanduser("~/Desktop/LoopyComfy/") if os.path.exists(os.path.expanduser("~/Desktop/")) else "./desktop/"
+                    ]
+                }
+                
+        except Exception as e:
+            return {
+                "success": False,
+                "error": f"Failed to open directory dialog: {str(e)}",
+                "path": None
+            }
 
 
 # Mock server integration functions
@@ -207,13 +300,22 @@ def create_standalone_server(host: str = "localhost", port: int = 8188):
         def browse_folder():
             return jsonify(api.browse_folder(request.get_json() or {}))
         
+        @app.route('/loopycomfy/browse_output_dir', methods=['POST'])
+        def browse_output_directory():
+            return jsonify(api.browse_output_directory(request.get_json() or {}))
+        
         @app.route('/loopycomfy/video_info', methods=['POST'])
         def video_info():
             return jsonify(api.get_video_info(request.get_json() or {}))
         
         @app.route('/loopycomfy/health', methods=['GET'])
         def health_check():
-            return jsonify({"status": "healthy", "service": "LoopyComfy API"})
+            return jsonify({
+                "status": "healthy", 
+                "service": "LoopyComfy API",
+                "version": "1.2.0",
+                "features": ["folder_browser", "output_directory_browser", "video_info", "format_validation"]
+            })
         
         print(f"LoopyComfy API server starting on {host}:{port}")
         app.run(host=host, port=port, debug=False)

@@ -1,0 +1,64 @@
+version: 2.0
+compatibility_mode: v1  # Start in v1 mode for safety
+
+advanced_features:
+  enabled: false  # Must explicitly enable
+  auto_fallback: true  # Automatic degradation
+  
+real_time:
+  enabled: false
+  websocket_port: 8765
+  websocket_auth: true
+  auth_token: "generate_random_token_here"
+  max_latency_ms: 
+    local: 100
+    lan: 200
+    internet: 500
+  ssl_enabled: false
+  ssl_cert_path: null
+  ssl_key_path: null
+  
+ml:
+  enabled: false
+  model_path: "./models/transition_quality.pth"
+  inference_device: "auto"  # auto, cuda, cpu
+  quality_mode: "auto"  # full, lite, cpu, auto
+  max_inference_ms:
+    full: 50
+    lite: 30
+    cpu: 100
+  cache_predictions: true
+  continuous_learning: false
+  
+gpu:
+  enabled: false
+  device_id: 0
+  memory_pool_size_mb: "auto"  # auto or specific size
+  cuda_version: "auto"  # auto-detect
+  allow_tf32: true
+  benchmark_mode: false
+  
+performance:
+  parallel_workers: "auto"  # auto or specific number
+  cache_strategy: "intelligent"  # basic, intelligent, off
+  memory_limit_mb: null  # null = no limit, or specific value
+  memory_warning_threshold: 0.9  # Warn at 90% usage
+  
+cache:
+  redis_enabled: false
+  redis_host: "localhost"
+  redis_port: 6379
+  redis_password: null
+  redis_timeout: 5
+  memory_cache_size: 100
+  disk_cache_enabled: true
+  disk_cache_path: "./cache"
+  disk_cache_size_gb: 10
+  
+monitoring:
+  enabled: true
+  log_level: "INFO"
+  performance_tracking: true
+  error_reporting: true
+  metrics_export: false
+  metrics_port: 9090
