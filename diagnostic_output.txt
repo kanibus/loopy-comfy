@@ -1,0 +1,95 @@
+LOOPYCOMFY PROFESSIONAL DIAGNOSTIC ANALYSIS
+================================================================================
+
+================================================================================
+DIAGNOSTIC SUMMARY
+================================================================================
+INFO: === PYTHON ENVIRONMENT ANALYSIS ===
+INFO: Python executable: C:\Users\lebigdog\AppData\Local\Programs\Python\Python312\python.exe
+INFO: Python version: 3.12.10 (tags/v3.12.10:0cc8128, Apr  8 2025, 12:21:36) [MSC v.1943 64 bit (AMD64)]
+INFO: Platform: win32
+INFO: Current working directory: C:\Users\lebigdog\dev\persona_looping\loopy-comfy-deploy
+INFO: Script directory: C:\Users\lebigdog\dev\persona_looping\loopy-comfy-deploy
+INFO: Python path has 6 entries:
+INFO:   [0] C:\Users\lebigdog\dev\persona_looping\loopy-comfy-deploy
+INFO:   [1] C:\Users\lebigdog\AppData\Local\Programs\Python\Python312\python312.zip
+INFO:   [2] C:\Users\lebigdog\AppData\Local\Programs\Python\Python312\DLLs
+INFO:   [3] C:\Users\lebigdog\AppData\Local\Programs\Python\Python312\Lib
+INFO:   [4] C:\Users\lebigdog\AppData\Local\Programs\Python\Python312
+INFO:   [5] C:\Users\lebigdog\AppData\Local\Programs\Python\Python312\Lib\site-packages
+INFO: === FILE STRUCTURE ANALYSIS ===
+INFO: OK Found: nodes/video_asset_loader.py
+INFO: OK Found: nodes/markov_sequencer.py
+INFO: OK Found: nodes/video_composer.py
+INFO: OK Found: nodes/video_saver.py
+INFO: OK Found: core/markov_engine.py
+INFO: OK Found: utils/video_utils.py
+INFO: OK Found: utils/security_utils.py
+INFO: OK Found: utils/memory_manager.py
+INFO: OK Found: utils/performance_optimizations.py
+INFO: OK Found: requirements.txt
+INFO: OK Found: __init__.py
+INFO: OK All expected files present
+INFO: === DEPENDENCY ANALYSIS ===
+INFO: OK numpy (1.26.4): Mathematical operations
+INFO: OK cv2 (4.11.0): OpenCV for video processing
+INFO: OK psutil (5.9.8): System monitoring
+INFO: OK scipy (1.16.1): Scientific computing
+INFO: OK PIL (10.4.0): Pillow for image processing
+INFO: OK imageio (2.37.0): Image/video I/O
+INFO: OK ffmpeg (unknown): FFmpeg Python wrapper
+INFO: OK sklearn (1.7.1): Scikit-learn for ML
+INFO: OK multiprocessing (unknown): Built-in multiprocessing
+INFO: OK threading (unknown): Built-in threading
+INFO: OK queue (unknown): Built-in queue
+INFO: OK collections (unknown): Built-in collections
+INFO: OK hashlib (unknown): Built-in hashing
+INFO: OK hmac (unknown): Built-in HMAC
+INFO: OK secrets (unknown): Built-in cryptography
+INFO: OK tracemalloc (unknown): Built-in memory tracing
+INFO: OK All dependencies available
+INFO: === UTILITY MODULE IMPORT ANALYSIS ===
+INFO: OK utils.video_utils: Video processing utilities
+INFO: OK utils.security_utils: Security validation utilities
+INFO:     |-- PathValidator class: Available
+INFO: OK utils.memory_manager: Memory management utilities
+INFO: OK utils.performance_optimizations: Performance optimization utilities
+INFO: OK utils.optimized_video_processing: Optimized video processing
+INFO: OK core.markov_engine: Markov chain engine
+INFO:     |-- MarkovTransitionEngine class: Available
+INFO: === NODE IMPORT ANALYSIS ===
+INFO: OK nodes.video_asset_loader: Module imported successfully
+INFO:     |-- LoopyComfy_VideoAssetLoader: Class found
+INFO:     |-- INPUT_TYPES: 5 inputs - ['directory_path', 'browse_folder', 'file_pattern']...
+INFO:     |-- RETURN_TYPES: ('VIDEO_METADATA_LIST', 'INT', 'FLOAT', 'IMAGE', 'STRING')
+INFO: OK nodes.markov_sequencer: Module imported successfully
+INFO:     |-- LoopyComfy_MarkovVideoSequencer: Class found
+INFO:     |-- INPUT_TYPES: 4 inputs - ['video_metadata', 'total_duration_minutes', 'prevent_immediate_repeat']...
+INFO:     |-- RETURN_TYPES: ('VIDEO_SEQUENCE', 'TRANSITION_LOG', 'STATISTICS')
+INFO: OK nodes.video_composer: Module imported successfully
+INFO:     |-- LoopyComfy_VideoSequenceComposer: Class found
+INFO:     |-- INPUT_TYPES: 4 inputs - ['sequence', 'resolution_preset', 'output_fps']...
+INFO:     |-- RETURN_TYPES: ('IMAGE', 'INT', 'FLOAT', 'FLOAT')
+INFO: OK nodes.video_saver: Module imported successfully
+INFO:     |-- LoopyComfy_VideoSaver: Class found
+INFO:     |-- INPUT_TYPES: 6 inputs - ['frames', 'platform_preset', 'output_filename']...
+INFO:     |-- RETURN_TYPES: ('STRING', 'STATISTICS', 'INT', 'FLOAT')
+INFO: === COMFYUI REGISTRATION ANALYSIS ===
+INFO: NODE_CLASS_MAPPINGS found with 4 entries:
+INFO:   LoopyComfy_VideoAssetLoader: <class 'nodes.video_asset_loader.LoopyComfy_VideoAssetLoader'>
+INFO:   LoopyComfy_MarkovVideoSequencer: <class 'nodes.markov_sequencer.LoopyComfy_MarkovVideoSequencer'>
+INFO:   LoopyComfy_VideoSequenceComposer: <class 'nodes.video_composer.LoopyComfy_VideoSequenceComposer'>
+INFO:   LoopyComfy_VideoSaver: <class 'nodes.video_saver.LoopyComfy_VideoSaver'>
+INFO: NODE_DISPLAY_NAME_MAPPINGS found with 4 entries
+
+WARNINGS (1):
+WARN: Not running in ComfyUI environment
+
+================================================================================
+FINAL ASSESSMENT
+================================================================================
+SUCCESS NO CRITICAL ERRORS FOUND
+All systems appear to be working correctly.
+If nodes still don't load, the issue may be in ComfyUI's node discovery process.
+
+Detailed report saved to: diagnostic_report.json
