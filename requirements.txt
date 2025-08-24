@@ -56,6 +56,9 @@ imageio-ffmpeg>=0.4.8,<1.0.0   # FFmpeg backend for imageio
 # Machine Learning (Optional - for future features)
 scikit-learn>=1.3.0,<2.0.0     # Machine learning algorithms
 
+# System Monitoring and Performance (Required for PRPPRD security features)
+psutil>=5.9.6,<6.0.0           # System and process monitoring
+
 # Development and Testing Tools (Optional)
 pytest>=7.4.0,<8.0.0           # Testing framework
 pytest-cov>=4.1.0,<5.0.0       # Coverage reporting
